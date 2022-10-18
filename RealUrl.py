@@ -5,7 +5,7 @@
 # Software:PyCharm
 
 import sys
-from PyQt5.QtWidgets import QWidget, QPushButton, QLabel, QHBoxLayout, QVBoxLayout, QLineEdit, QScrollArea
+from PyQt5.QtWidgets import QWidget, QPushButton, QLabel, QHBoxLayout, QVBoxLayout, QLineEdit, QScrollArea, QApplication
 from PyQt5.QtCore import Qt, QRect
 from PyQt5.Qt import QRegExp, QRegExpValidator
 from PyQt5 import QtWidgets, QtCore, QtGui
@@ -546,6 +546,9 @@ class RealList(RoundShadow, QWidget):
                     border_color = '#00AEEC'
                 elif 'douyin' in name:
                     border_color = '#FE2B54'
+                elif 'huya' in name:
+                    border_color = '#FFAB08'
+
                 vbox_list = QVBoxLayout()
                 vbox_list.setSpacing(0)
                 hbox_title = QHBoxLayout()
@@ -579,22 +582,3 @@ class RealList(RoundShadow, QWidget):
 
     def closes(self):  # 关闭窗口
         self.close()
-
-
-# if __name__ == '__main__':
-    # dict_ = {'douyu': [{'flv': 'http://ws-tct.douyucdn.cn/live/16101rumZjzVOZu1.flv?uuid='},
-    #                    {'x_p2p': 'http://ws-tct.douyucdn.cn/live/16101rumZjzVOZu1.xs?uuid='},
-    #                    {'flv': 'http://ws-tct.douyucdn.cn/live/16101rumZjzVOZu1.flv?uuid='}], 'bilibili': [{
-    #     '线路1': 'https://d1--cn-gotcha208.bilivideo.com/live-bvc/515008/live_659965_4719464_bluray/index.m3u8?expires=1665906560&len=0&oi=1912051183&pt=web&qn=10000&trid=10076ec5fb6235e843928b71150cf1059c95&sigparams=cdn,expires,len,oi,pt,qn,trid&cdn=cn-gotcha208&sign=36879a397fb28093a01491f5142beb56&sk=c9c6154426932efa80d25af02e87a3bd&p2p_type=1&src=57345&sl=3&free_type=0&pp=rtmp&machinezone=jd&source=onetier&site=2fac3eced2bc217b604ef4e6bf224d15&order=1'},
-    #     {
-    #         '线路2': 'https://cn-jsnt-ct-01-06.bilivideo.com/live-bvc/515008/live_659965_4719464_bluray/index.m3u8?expires=1665906560&len=0&oi=1912051183&pt=web&qn=10000&trid=10076ec5fb6235e843928b71150cf1059c95&sigparams=cdn,expires,len,oi,pt,qn,trid&cdn=cn-gotcha01&sign=9fbabbc8b905173e35e155630f7e8fdc&sk=c9c6154426932efa80d25af02e87a3bd&flvsk=2935686d6cb9146c7a6a6a0b4e120e2557adc0b48de99725a5887e843ee476a1&p2p_type=1&src=57345&sl=3&free_type=0&sid=cn-jsnt-ct-01-06&chash=1&sche=ban&bvchls=1&score=11&pp=rtmp&machinezone=jd&source=onetier&site=2fac3eced2bc217b604ef4e6bf224d15&order=2'}],
-    #          'douyin': [{'flv': 'http://ws-tct.douyucdn.cn/live/16101rumZjzVOZu1.flv?uuid='},
-    #                     {'x_p2p': 'http://ws-tct.douyucdn.cn/live/16101rumZjzVOZu1.xs?uuid='},
-    #                     {'flv': 'http://ws-tct.douyucdn.cn/live/16101rumZjzVOZu1.flv?uuid='}], 'bili': [{
-    #         '线路1': 'https://d1--cn-gotcha208.bilivideo.com/live-bvc/515008/live_659965_4719464_bluray/index.m3u8?expires=1665906560&len=0&oi=1912051183&pt=web&qn=10000&trid=10076ec5fb6235e843928b71150cf1059c95&sigparams=cdn,expires,len,oi,pt,qn,trid&cdn=cn-gotcha208&sign=36879a397fb28093a01491f5142beb56&sk=c9c6154426932efa80d25af02e87a3bd&p2p_type=1&src=57345&sl=3&free_type=0&pp=rtmp&machinezone=jd&source=onetier&site=2fac3eced2bc217b604ef4e6bf224d15&order=1'},
-    #     ]}
-    #  uid = "252140"
-    # app = QApplication(sys.argv)
-    # like = RealList(dict_, uid)
-    # like.show()
-    # sys.exit(app.exec_())
