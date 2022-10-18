@@ -224,6 +224,7 @@ class MainUi(QWidget):
         super(MainUi, self).__init__()
         self.setup_ui()
         self.real_dict = {}
+        self.real_id = ''
         self.add_shadow()  # 阴影边框
 
     def setup_ui(self):
@@ -446,7 +447,7 @@ class MainUi(QWidget):
         self.real_douyu.triggered.connect(self.real_live_)
         self.real_bili.triggered.connect(self.real_live_)
         self.real_douyin.triggered.connect(self.real_live_)
-        self.pushbutton_logo.clicked.connect(self.real_window)
+        self.pushbutton_logo.clicked.connect(lambda: self.real_window(self.real_id))
 
     def url_project_(self):
         url = 'https://github.com/s282730788/RealTool'
@@ -516,6 +517,7 @@ class MainUi(QWidget):
                                                                                             }""")
 
     def text(self, real_dict, real_id):
+        self.real_id = real_id
         self.pushbutton_logo.setStyleSheet("""QPushButton{
                                                                                         border-image: url('./image/logo.png');
                                                                                         }""")
