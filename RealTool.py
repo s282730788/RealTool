@@ -24,6 +24,7 @@ import re
 import requests
 
 from real.douyu import DouYu
+from real.huya import HuYa
 from real.bili import BiliBili
 from real.douyin import DouYin
 from RealUrl import RealList
@@ -49,6 +50,16 @@ class ThreadGet(QThread):
                             real_dict.update(douyu_dict)
             except Exception as err:
                 print("douyu:%s" % err)
+
+            try:
+                if real_ == "huya":
+                    if self.config['real'][real_] == "1":
+                        huya = HuYa(self.real_id)
+                        huya_dict = huya.get_real_url()
+                        if huya_dict:
+                            real_dict.update(huya_dict)
+            except Exception as err:
+                print("huya:%s" % err)
             try:
                 if real_ == "bili":
                     if self.config['real'][real_] == "1":
@@ -68,6 +79,7 @@ class ThreadGet(QThread):
                             real_dict.update(douyin_dict)
             except Exception as err:
                 print("douyin:%s" % err)
+        print(real_dict)
         self._signal.emit(real_dict, self.real_id)
 
 
@@ -398,12 +410,15 @@ class MainUi(QWidget):
         self.menu_real = QtWidgets.QMenu("直播平台", self.menu_tool)
         self.menu_real.mouseReleaseEvent = self.mouse_release_event_real_
         self.real_douyu = QtWidgets.QAction("斗鱼直播", self.menu_real)
+        self.real_huya = QtWidgets.QAction("虎牙直播", self.menu_real)
         self.real_bili = QtWidgets.QAction("哔哩直播", self.menu_real)
         self.real_douyin = QtWidgets.QAction("抖音直播", self.menu_real)
         self.menu_real.addAction(self.real_douyu)
+        self.menu_real.addAction(self.real_huya)
         self.menu_real.addAction(self.real_bili)
         self.menu_real.addAction(self.real_douyin)
         self.real_douyu.setCheckable(True)
+        self.real_huya.setCheckable(True)
         self.real_bili.setCheckable(True)
         self.real_douyin.setCheckable(True)
 
@@ -445,6 +460,7 @@ class MainUi(QWidget):
         self.setting_background.triggered.connect(self.background_image_)
         self.pushbutton_get.clicked.connect(self.thread_get)
         self.real_douyu.triggered.connect(self.real_live_)
+        self.real_huya.triggered.connect(self.real_live_)
         self.real_bili.triggered.connect(self.real_live_)
         self.real_douyin.triggered.connect(self.real_live_)
         self.pushbutton_logo.clicked.connect(lambda: self.real_window(self.real_id))
@@ -508,6 +524,8 @@ class MainUi(QWidget):
                 rid = re.search('\d+', rid).group()
             elif 'douyu.com' in rid:
                 rid = re.search('\d+', rid).group()
+            elif 'huya.com' in rid:
+                rid = rid.split("/")[-1]
             self.lineedit_input.setText(rid)
             self.thread = ThreadGet(rid)
             self.thread._signal.connect(self.text)
@@ -528,9 +546,13 @@ class MainUi(QWidget):
     def real_live_(self):
         self.config = ConfigObj("config.ini", encoding="UTF8")
         self.config['real']['douyu'] = "0"
+        self.config['real']['huya'] = "0"
         self.config['real']['bili'] = "0"
+        self.config['real']['douyin'] = "0"
         if self.real_douyu.isChecked():
             self.config['real']['douyu'] = "1"
+        if self.real_huya.isChecked():
+            self.config['real']['huya'] = "1"
         if self.real_bili.isChecked():
             self.config['real']['bili'] = "1"
         if self.real_douyin.isChecked():
