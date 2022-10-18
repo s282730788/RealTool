@@ -565,13 +565,16 @@ class MainUi(QWidget):
             if real_ == 'douyu':
                 if self.config['real'][real_] == "1":
                     self.real_douyu.setChecked(True)
+            if real_ == 'huya':
+                if self.config['real'][real_] == "1":
+                    self.real_huya.setChecked(True)                    
             if real_ == 'bili':
                 if self.config['real'][real_] == "1":
                     self.real_bili.setChecked(True)
             if real_ == 'douyin':
                 if self.config['real'][real_] == "1":
                     self.real_douyin.setChecked(True)
-
+            
     def background_image_(self):
         getcwd_file = '{}/image/'.format(os.getcwd())
         background_image, filetype = QFileDialog.getOpenFileName(self,
