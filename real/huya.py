@@ -54,8 +54,7 @@ class HuYa:
                     return '直播录像：' + liveline
                 else:
                     liveline = self.live(liveline)
-                    real_url = ("https:" + liveline).replace("hls", "flv").replace("m3u8", "flv")
-                    real_url = re.sub('&ctype=tars_mobile', "", real_url)
+                    real_url = ("https:" + liveline).replace("hls", "flv").replace("m3u8", "flv").replace('&ctype=tars_mobile', '')
                     if '.m3u8' in real_url:
                         real_list.append({'m3u8':real_url})
                     elif '.flv' in real_url:
