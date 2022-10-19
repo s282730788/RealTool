@@ -7,6 +7,7 @@
 from configobj import ConfigObj
 import os
 
+
 def config_():
     config = ConfigObj("%s/config.ini" % os.path.dirname(__file__), encoding='UTF8')
     config['size'] = {}
