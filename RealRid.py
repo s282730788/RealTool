@@ -376,3 +376,4 @@ if __name__ == '__main__':
     real_rid = RidList()
     real_rid.show()
     sys.exit(app.exec_())
+    
