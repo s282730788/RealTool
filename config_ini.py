@@ -20,4 +20,6 @@ def config_():
     config['font']['size'] = 26
     config['font']['color'] = '#505050'
     config['real'] = {'douyu': '1', 'huya': '1', 'bili': '1', 'douyin': '1'}
+    config['rid'] = ""
     config.write()
+
