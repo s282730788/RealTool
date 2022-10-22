@@ -22,65 +22,70 @@ from configobj import ConfigObj
 import config_ini
 import re
 import requests
+import ast
 
 from real.douyu import DouYu
 from real.huya import HuYa
 from real.bili import BiliBili
 from real.douyin import DouYin
 from RealUrl import RealList
+from RealRid import RidList
 
 
 class ThreadGet(QThread):
-    _signal = pyqtSignal(dict, str)
+    _signal = pyqtSignal(dict)
 
-    def __init__(self, real_id):
+    def __init__(self, real_list):
         super(ThreadGet, self).__init__()
-        self.real_id = real_id
+        self.real_list = real_list
         self.config = ConfigObj("config.ini", encoding='UTF8')
 
     def run(self):
         real_dict = {}
-        for real_ in self.config['real']:
-            try:
-                if real_ == "douyu":
-                    if self.config['real'][real_] == "1":
-                        douyu = DouYu(self.real_id)
-                        douyu_dict = douyu.get_real_url()
-                        if douyu_dict:
-                            real_dict.update(douyu_dict)
-            except Exception as err:
-                print("douyu:%s" % err)
+        for rid in self.real_list:
+            self.real_id = rid
+            for real_ in self.config['real']:
+                try:
+                    if real_ == "douyu":
+                        if self.config['real'][real_] == "1":
+                            douyu = DouYu(rid)
+                            douyu_dict = douyu.get_real_url()
+                            if douyu_dict:
+                                real_dict.update(douyu_dict)
+                except Exception as err:
+                    print("douyu:%s" % err)
 
-            try:
-                if real_ == "huya":
-                    if self.config['real'][real_] == "1":
-                        huya = HuYa(self.real_id)
-                        huya_dict = huya.get_real_url()
-                        if huya_dict:
-                            real_dict.update(huya_dict)
-            except Exception as err:
-                print("huya:%s" % err)
-            try:
-                if real_ == "bili":
-                    if self.config['real'][real_] == "1":
-                        bili = BiliBili(self.real_id)
-                        bili_dict = bili.get_real_url()
-                        if bili_dict:
-                            real_dict.update(bili_dict)
-            except Exception as err:
-                print("bili:%s" % err)
+                try:
+                    if real_ == "huya":
+                        if self.config['real'][real_] == "1":
+                            huya = HuYa(rid)
+                            huya_dict = huya.get_real_url()
+                            if huya_dict:
+                                real_dict.update(huya_dict)
+                except Exception as err:
+                    print("huya:%s" % err)
+                try:
+                    if real_ == "bili":
+                        if self.config['real'][real_] == "1":
+                            bili = BiliBili(rid)
+                            bili_dict = bili.get_real_url()
+                            if bili_dict:
+                                real_dict.update(bili_dict)
+                except Exception as err:
+                    print("bili:%s" % err)
 
-            try:
-                if real_ == "douyin":
-                    if self.config['real'][real_] == "1":
-                        douyin = DouYin(self.real_id)
-                        douyin_dict = douyin.get_real_url()
-                        if douyin_dict:
-                            real_dict.update(douyin_dict)
-            except Exception as err:
-                print("douyin:%s" % err)
-        print(real_dict)
-        self._signal.emit(real_dict, self.real_id)
+                try:
+                    if real_ == "douyin":
+                        if self.config['real'][real_] == "1":
+                            douyin = DouYin(rid)
+                            douyin_dict = douyin.get_real_url()
+                            if douyin_dict:
+                                real_dict.update(douyin_dict)
+                except Exception as err:
+                    print("douyin:%s" % err)
+            print(real_dict)
+        if real_dict:
+            self._signal.emit(real_dict)
 
 
 class ButtonGet(QtWidgets.QPushButton):
@@ -434,10 +439,12 @@ class MainUi(QWidget):
         self.about_explain.triggered.connect(self.explain_)
 
         self.menu_setting = QtWidgets.QMenu("其它设置", self.menu_tool)
+        self.setting_rid = QtWidgets.QAction("批量获取", self.menu_setting)
         self.setting_background = QtWidgets.QAction("背景设置", self.menu_setting)
         self.setting_font_size = QtWidgets.QAction("字体大小", self.menu_setting)
         self.setting_font_color = QtWidgets.QAction("字体颜色", self.menu_setting)
         self.setting_reset = QtWidgets.QAction("重置设置", self.menu_setting)
+        self.menu_setting.addAction(self.setting_rid)
         self.menu_setting.addAction(self.setting_background)
         self.menu_setting.addAction(self.setting_font_size)
         self.menu_setting.addAction(self.setting_font_color)
@@ -456,6 +463,7 @@ class MainUi(QWidget):
         self.open_path.triggered.connect(self.open_path_)
         self.setting_reset.triggered.connect(self.reset_)
         self.setting_font_color.triggered.connect(self.font_color_)
+        self.setting_rid.triggered.connect(self.real_rid_)
         self.setting_font_size.triggered.connect(self.font_size_)
         self.setting_background.triggered.connect(self.background_image_)
         self.pushbutton_get.clicked.connect(self.thread_get)
@@ -463,7 +471,12 @@ class MainUi(QWidget):
         self.real_huya.triggered.connect(self.real_live_)
         self.real_bili.triggered.connect(self.real_live_)
         self.real_douyin.triggered.connect(self.real_live_)
-        self.pushbutton_logo.clicked.connect(lambda: self.real_window(self.real_id))
+        self.pushbutton_logo.clicked.connect(lambda: self.real_window())
+
+    def real_rid_(self):
+        self.real_rid_list = RidList()
+        self.real_rid_list.setWindowModality(Qt.ApplicationModal)  # 禁止非当前窗口操作
+        self.real_rid_list.show()
 
     def url_project_(self):
         url = 'https://github.com/s282730788/RealTool'
@@ -481,9 +494,9 @@ class MainUi(QWidget):
         QtGui.QDesktopServices.openUrl(QtCore.QUrl(url))
         self.lineedit_input.setText("密码1234")
 
-    def real_window(self, real_id):
+    def real_window(self):
         if self.real_dict:
-            self.real_list = RealList(self.real_dict, real_id)
+            self.real_list = RealList(self.real_dict)
             self.real_list.show()
 
     def get_room_id(self, url):
@@ -491,7 +504,7 @@ class MainUi(QWidget):
             'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 10_3_1 like Mac OS X) AppleWebKit/603.1.30 (KHTML, like Gecko) Version/10.0 Mobile/14E304 Safari/602.1',
         }
         url = re.search(r'(https.*)', url).group(1)
-        response = requests.head(url, headers=headers)
+        response = requests.head(url, headers=headers, timeout=2)
         url = response.headers['location']
         room_id = re.search(r'\d{19}', url).group(0)
 
@@ -509,12 +522,15 @@ class MainUi(QWidget):
         )
 
         response = requests.get('https://webcast.amemv.com/webcast/room/reflow/info/?', headers=headers,
-                                params=params).json()
+                                params=params, timeout=2).json()
         if response:
             return response['data']['room']['owner']['web_rid']
 
     def thread_get(self):
+        self.config = ConfigObj("config.ini", encoding="UTF8")
         rid = self.lineedit_input.text()
+        rid_list = []  # 存放RID列表
+        rid_list_del = []  # 去重
         if rid:
             if 'live.douyin.com' in rid:
                 rid = re.findall('(\d+)', rid)[0]
@@ -523,25 +539,44 @@ class MainUi(QWidget):
             elif 'live.bilibili.com' in rid:
                 rid = re.search('\d+', rid).group()
             elif 'douyu.com' in rid:
-                rid = re.search('\d+', rid).group()
+                if 'rid=' in rid:
+                    rid = re.findall('rid=(\d+)', rid)[0]
+                else:
+                    rid = re.search('\d+', rid).group()
             elif 'huya.com' in rid:
                 rid = rid.split("/")[-1]
+            rid_list.append(rid)
             self.lineedit_input.setText(rid)
-            self.thread = ThreadGet(rid)
+            self.thread = ThreadGet(rid_list)
             self.thread._signal.connect(self.text)
             self.thread.start()
             self.pushbutton_logo.setStyleSheet("""QPushButton{
                                                                                             border-image: url('./image/logo_get.png');
                                                                                             }""")
+        else:
+            rid_dict = self.config['rid']
+            if rid_dict:
+                rid_dict = ast.literal_eval(self.config['rid'])
+                for i in rid_dict:
+                    rid_list.append(rid_dict[i])
+                for j in rid_list:
+                    if j not in rid_list_del:
+                        rid_list_del.append(j)
+                rid_list = rid_list_del
+                self.thread = ThreadGet(rid_list)
+                self.thread._signal.connect(self.text)
+                self.thread.start()
+                self.pushbutton_logo.setStyleSheet("""QPushButton{
+                                                                                                            border-image: url('./image/logo_get.png');
+                                                                                                            }""")
 
-    def text(self, real_dict, real_id):
-        self.real_id = real_id
+    def text(self, real_dict):
         self.pushbutton_logo.setStyleSheet("""QPushButton{
                                                                                         border-image: url('./image/logo.png');
                                                                                         }""")
         QApplication.processEvents()
         self.real_dict = real_dict
-        self.real_window(real_id)
+        self.real_window()
 
     def real_live_(self):
         self.config = ConfigObj("config.ini", encoding="UTF8")
@@ -567,14 +602,14 @@ class MainUi(QWidget):
                     self.real_douyu.setChecked(True)
             if real_ == 'huya':
                 if self.config['real'][real_] == "1":
-                    self.real_huya.setChecked(True)                    
+                    self.real_huya.setChecked(True)
             if real_ == 'bili':
                 if self.config['real'][real_] == "1":
                     self.real_bili.setChecked(True)
             if real_ == 'douyin':
                 if self.config['real'][real_] == "1":
                     self.real_douyin.setChecked(True)
-            
+
     def background_image_(self):
         getcwd_file = '{}/image/'.format(os.getcwd())
         background_image, filetype = QFileDialog.getOpenFileName(self,
@@ -768,6 +803,7 @@ class MainUi(QWidget):
         self.showMinimized()
 
     def close_(self):  # 关闭窗口动画
+        subprocess.Popen("cmd.exe /C" + "taskkill -f -im N_m3u8DL-RE.exe", shell=True)
         self.mSysTrayIcon = None  # 软件关闭后托盘不会有残留
         self.close_animation = QPropertyAnimation(self, b"windowOpacity")
         self.close_animation.setDuration(400)  # 动画时长
@@ -805,5 +841,3 @@ if __name__ == "__main__":
     ui = MainUi()
     ui.show()
     sys.exit(app.exec_())
-
-    
