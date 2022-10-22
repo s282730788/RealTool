@@ -18,15 +18,15 @@ import time
 
 
 class ThreadRec(QtCore.QThread):
-    def __init__(self, live_name, url_link, lineedit_input_text, url_name):
+    def __init__(self, live_name, url_link, rid, url_name):
         super(ThreadRec, self).__init__()
         self.live_name = live_name
         self.url_link = url_link
-        self.lineedit_input_text = lineedit_input_text
+        self.rid = rid
         self.url_name = url_name
 
     def run(self):
-        path_down = '{}/real_save/{}/Downloads'.format(os.getcwd(), self.lineedit_input_text)
+        path_down = '{}/real_save/{}/Downloads'.format(os.getcwd(), self.rid)
         if not os.path.exists(path_down):
             os.makedirs(path_down)
 
@@ -36,7 +36,7 @@ class ThreadRec(QtCore.QThread):
             live_url = live_url.replace("&", "^&^")
             live_url = live_url.replace("^^", "^")
             rec = 'N_m3u8DL-RE_Beta_win-x64\\N_m3u8DL-RE.exe "{}" --tmp-dir "{}" --save-dir "{}" --save-name "{}_{}_{}" --live-real-time-merge --del-after-done'.format(
-                live_url, path_down, path_down, self.live_name, self.lineedit_input_text,
+                live_url, path_down, path_down, self.live_name, self.rid,
                 time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime()))
             with open("rec.bat", "w", encoding="utf-8") as f:
                 f.write(rec)
@@ -189,8 +189,8 @@ class MoveTop(QWidget):
 
     def InitializeWindow(self):
         self.isPressed = False
-        self.setFixedWidth(840)
-        self.setFixedHeight(60)
+        # self.setFixedWidth(840)
+        # self.setFixedHeight(60)
         top = QLabel()
         layout_h = QHBoxLayout()
         layout_h.addWidget(top)
@@ -222,17 +222,16 @@ class MoveTop(QWidget):
 class RealList(RoundShadow, QWidget):
     _signal = QtCore.pyqtSignal(str)
 
-    def __init__(self, real_dict, lineedit_input_text, parent=None):
+    def __init__(self, real_dict, parent=None):
         super(RealList, self).__init__(parent)
         self.real_dict = real_dict
-        self.lineedit_input_text = lineedit_input_text
         self.setup_ui()
 
     def setup_ui(self):
         # self.resize(850, 600)
         self.setWindowFlags(
             QtCore.Qt.Window | QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowSystemMenuHint | QtCore.Qt.WindowMinimizeButtonHint | QtCore.Qt.WindowMaximizeButtonHint)  # 隐藏标题栏且可以任务栏最小化
-        self.setMinimumSize(QtCore.QSize(850, 600))  # 设置透明窗口最小尺寸
+        self.setMinimumSize(QtCore.QSize(850, 610))  # 设置透明窗口最小尺寸
         self.setWindowTitle("直播源列表")
         self.setWindowIcon(QtGui.QIcon("./image/icon.png"))
 
@@ -240,6 +239,7 @@ class RealList(RoundShadow, QWidget):
         self.label_bottom.setGeometry(5, 60, 840, 540)
         self.label_bottom.setStyleSheet("""QLabel{
                                                         border:none;
+                                                        border-bottom:1px solid #E7E7E7;
                                                         background-color:rgba(255,255,255,1);
                                                         border-bottom-left-radius:5px;
                                                         border-bottom-right-radius:5px;
@@ -253,9 +253,9 @@ class RealList(RoundShadow, QWidget):
         self.button_close.setToolTip("关闭")
 
         self.label_title = QLabel()
-        self.label_title.setFixedSize(200, 35)
+        self.label_title.setFixedSize(100, 35)
         self.label_title.setAlignment(Qt.AlignCenter)
-        self.label_title.setText(self.lineedit_input_text)
+        self.label_title.setText("直播源列表")
         self.label_title.setStyleSheet("""QLabel{                                                    
                                                     border:none;
                                                     border-radius:16px;     
@@ -272,6 +272,7 @@ class RealList(RoundShadow, QWidget):
         self.label_top.setGeometry(QtCore.QRect(5, 0, 840, 60))
         self.label_top.setStyleSheet("""
                                                             QLabel{
+                                                                border-top:1px solid #E9E9E9;
                                                                 border-bottom:1px solid #E7E7E7;
                                                                 background-color:rgba(255,255,255,1);
                                                                 border-top-left-radius:5px;
@@ -280,6 +281,7 @@ class RealList(RoundShadow, QWidget):
                                                             """)
 
         self.move_top_left = MoveTop(self)
+        self.move_top_left.setFixedWidth(310)
         self.move_top_left.setObjectName("move_top_title")
         self.move_top_right = MoveTop(self)
         self.move_top_right.setObjectName("move_top_title")
@@ -289,15 +291,12 @@ class RealList(RoundShadow, QWidget):
         self.hbox_top.addWidget(self.label_title, Qt.AlignHCenter | Qt.AlignVCenter)
         self.hbox_top.addWidget(self.move_top_right)
         self.hbox_top.addWidget(self.button_close, Qt.AlignRight)
-        self.hbox_top.setContentsMargins(10, 0, 10, 0)  # 内边距
+        self.hbox_top.setContentsMargins(60, 0, 10, 0)  # 内边距
         self.hbox_top.setSpacing(0)
 
-        self.label_background = QLabel(self.label_bottom)
-        self.label_background.setFixedSize(840, 540)
-        self.label_scroll = QLabel(self.label_background)
+        self.label_scroll = QLabel(self.label_bottom)
         self.label_scroll.setMinimumSize(840, 500)
-        self.label_scroll.setStyleSheet("""QLabel{
-                                                        
+        self.label_scroll.setStyleSheet("""QLabel{                                                        
                                                         border-bottom-left-radius:5px;
                                                         border-bottom-right-radius:5px;
                                                                     }""")
@@ -313,18 +312,17 @@ class RealList(RoundShadow, QWidget):
                                                         border-bottom-right-radius:5px;
                                                         background-color:#ffffff;
                                                         border-image:url("./image/lol_s12.png");
-                                                    
+                                                        padding:0px 0px 5px 0px;                                                    
                                                         }
                                              """)
 
         self.add_layout()
-        self.vbox_widget = QVBoxLayout()
+        self.vbox_widget = QVBoxLayout(self)
         self.vbox_widget.addLayout(self.hbox_top)
         self.vbox_widget.addWidget(self.scroll)
-        self.vbox_widget.setContentsMargins(5, 60, 5, 0)  # 内边距
+        self.vbox_widget.setContentsMargins(5, 60, 5, 10)  # 内边距
         self.vbox_widget.setSpacing(0)
         self.button_close.clicked.connect(self.closes)
-        self.setLayout(self.vbox_widget)
 
     def label_text(self, text):
         self.label_title.setText(text)
@@ -341,7 +339,7 @@ class RealList(RoundShadow, QWidget):
         if b >= 1:
             b = (100 - a) / 50
             if b <= 0:
-                self.label_title.setText(self.lineedit_input_text)
+                self.label_title.setText("直播源列表")
                 b = 1
         self.label_title.setStyleSheet("""QLabel{                                                    
                                                     border:none;
@@ -355,13 +353,13 @@ class RealList(RoundShadow, QWidget):
                                                     }
                                                     """ % b)
 
-    def add_layout_title_save_all(self, name, url_dict, border_color):
+    def add_layout_title_save_all(self, name, url_dict, border_color, rid):
 
         def save(url_link, url_name, count):
-            save_path = "{}/real_save/{}".format(os.getcwd(), self.lineedit_input_text)
-            if not os.path.exists("{}/real_save/{}".format(os.getcwd(), self.lineedit_input_text)):
+            save_path = "{}/real_save/{}".format(os.getcwd(), rid)
+            if not os.path.exists("{}/real_save/{}".format(os.getcwd(), rid)):
                 os.makedirs(
-                    "{}/real_save/{}".format(os.getcwd(), self.lineedit_input_text))
+                    "{}/real_save/{}".format(os.getcwd(), rid))
             asx_path = "{}/{}_{}_{}.asx".format(save_path, name, url_name, count)
             if url_link:
                 asx_str = """
@@ -384,17 +382,31 @@ class RealList(RoundShadow, QWidget):
         button_title_save_all = ButtonTitle(name, border_color)
         button_title_save_all.clicked.connect(save_all)
 
+        label_rid = QLabel()
+        label_rid.setText(rid)
+        label_rid.setFixedHeight(33)
+        label_rid.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+        label_rid.setStyleSheet("""QLabel{
+                                                                    color:%s;
+                                                                    font-size:18px;
+                                                                    font-family:"Microsoft YaHei";
+                                                                    font-weight: bold;
+                                                                    }""" % border_color)
+
+
         hbox_title = QHBoxLayout()
         hbox_title.addWidget(button_title_save_all)
+        hbox_title.addWidget(label_rid)
         hbox_title.addStretch()
         hbox_title.setContentsMargins(0, 0, 20, 0)  # 内边距
-        hbox_title.setSpacing(0)
+        hbox_title.setSpacing(20)
+
         return hbox_title
 
-    def add_layout_url(self, name, url_name, url_link, border_color, count):
+    def add_layout_url(self, name, url_name, url_link, border_color, count, rid):
         label_name = QLabel()
         label_name.setText(url_name)
-        label_name.setFixedSize(80, 32)
+        label_name.setFixedSize(160, 32)
         label_name.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
         label_name.setStyleSheet("""QLabel{                   
                                                                 border:none;  
@@ -406,7 +418,7 @@ class RealList(RoundShadow, QWidget):
                                                                 background-color: %s;                                                                        
                                                                 }""" % border_color)
         lineedit_url = QLineEdit()
-        lineedit_url.setFixedSize(700, 32)
+        lineedit_url.setFixedSize(600, 32)
         lineedit_url.setText(url_link)
         lineedit_url.setStyleSheet("""QLineEdit{
                                                             padding:0px 150px 0px 10px;                                                          
@@ -456,27 +468,27 @@ class RealList(RoundShadow, QWidget):
         button_save.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         button_save.setToolTip('保存')
         button_save.setStyleSheet(button_qss('save.png'))
-        button_save.clicked.connect(lambda: asx_("save"))
+        button_save.clicked.connect(lambda: asx_("save", rid))
 
         button_play = QPushButton()
         button_play.setFixedSize(28, 28)
         button_play.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         button_play.setToolTip('打开')
         button_play.setStyleSheet(button_qss('play.png'))
-        button_play.clicked.connect(lambda: asx_("play"))
+        button_play.clicked.connect(lambda: asx_("play", rid))
 
         button_rec = QPushButton()
         button_rec.setFixedSize(28, 28)
         button_rec.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         button_rec.setToolTip('录制')
         button_rec.setStyleSheet(button_qss('rec.png'))
-        button_rec.clicked.connect(lambda: asx_("rec"))
+        button_rec.clicked.connect(lambda: asx_("rec", rid))
 
-        def asx_(text):
-            save_path = "{}/real_save/{}".format(os.getcwd(), self.lineedit_input_text)
-            if not os.path.exists("{}/real_save/{}".format(os.getcwd(), self.lineedit_input_text)):
+        def asx_(text, rid_):
+            save_path = "{}/real_save/{}".format(os.getcwd(), rid_)
+            if not os.path.exists("{}/real_save/{}".format(os.getcwd(), rid_)):
                 os.makedirs(
-                    "{}/real_save/{}".format(os.getcwd(), self.lineedit_input_text))
+                    "{}/real_save/{}".format(os.getcwd(), rid_))
             asx_path = "{}/{}.asx".format(save_path, name, url_name, count)
 
             asx_path = "{}/{}_{}_{}.asx".format(save_path, name, url_name, count)
@@ -503,7 +515,7 @@ class RealList(RoundShadow, QWidget):
                 subprocess.Popen("cmd.exe /C start {}".format(asx_path), shell=True)  # 此方法不显示黑窗口
                 self.label_text("打开文件")
             elif text == 'rec':
-                self.thread_rec = ThreadRec(name, url_link.strip(), self.lineedit_input_text, url_name)
+                self.thread_rec = ThreadRec(name, url_link.strip(), rid_, url_name)
                 self.thread_rec.start()
                 self.label_text("正在录制...")
                 button_rec.setStyleSheet("""QPushButton{
@@ -561,10 +573,10 @@ class RealList(RoundShadow, QWidget):
                                                                                         border-bottom-right-radius:5px;
                                                                                         }""" % border_color)
 
-                hbox_title.addLayout(self.add_layout_title_save_all(name, self.real_dict[name], border_color))
+                hbox_title.addLayout(self.add_layout_title_save_all(name, self.real_dict[name], border_color, self.real_dict[name][-1]['rid']))
                 vbox_url = QVBoxLayout(label_url_background)
                 for count, url_dict in enumerate(self.real_dict[name]):
-                    real_height += 110
+                    real_height += 90
                     list_height += 80
                     label_url_background.setFixedSize(800, list_height)
                     vbox_list.addLayout(hbox_title)
@@ -572,7 +584,8 @@ class RealList(RoundShadow, QWidget):
                     vbox_list.setContentsMargins(0, 30, 0, 0)  # 内边距
                     vbox_list.setSpacing(0)
                     for url_name in url_dict:
-                        vbox_url.addLayout(self.add_layout_url(name, url_name, url_dict[url_name], border_color, count))
+                        if url_name != 'rid':
+                            vbox_url.addLayout(self.add_layout_url(name, url_name, url_dict[url_name], border_color, count, self.real_dict[name][-1]['rid']))
                     self.label_scroll.setMinimumHeight(real_height)
                     vbox_real.addLayout(vbox_list)
             vbox_real.addStretch()
@@ -583,4 +596,9 @@ class RealList(RoundShadow, QWidget):
     def closes(self):  # 关闭窗口
         self.close()
 
-        
+if __name__ == '__main__':
+    real_dict_ = {'bili': [{'线路1_10000': 'https://d1--cn-gotcha208.bilivideo.com/live-bvc/452545/live_7734200_bs_7236416_bluray/index.m3u8?expires=1666425106&len=0&oi=1996077370&pt=web&qn=10000&trid=1007142a47f980ab4e63b64389b1d50f3388&sigparams=cdn,expires,len,oi,pt,qn,trid&cdn=cn-gotcha208&sign=151cd1c22bdb9feb668b5a522c8a355e&sk=389f0685dcc3bfe1d06dc4d3cd9591b0&p2p_type=1&src=57345&sl=10&free_type=0&pp=rtmp&machinezone=ylf&source=onetier&site=fa3e53c76006ad4caa7a06f5e3af080b&order=1'}, {'线路1_2500': 'https://d1--cn-gotcha208.bilivideo.com/live-bvc/452545/live_7734200_bs_7236416_2500/index.m3u8?expires=1666425106&len=0&oi=1996077370&pt=web&qn=2500&trid=1007142a47f980ab4e63b64389b1d50f3388&sigparams=cdn,expires,len,oi,pt,qn,trid&cdn=cn-gotcha208&sign=151cd1c22bdb9feb668b5a522c8a355e&sk=389f0685dcc3bfe1d06dc4d3cd9591b0&p2p_type=1&src=57345&sl=10&free_type=0&pp=rtmp&machinezone=ylf&source=onetier&site=fa3e53c76006ad4caa7a06f5e3af080b&order=1'}, {'线路2_10000': 'https://cn-hbyc-ct-02-17.bilivideo.com/live-bvc/452545/live_7734200_bs_7236416_bluray/index.m3u8?expires=1666425106&len=0&oi=1996077370&pt=web&qn=10000&trid=1007142a47f980ab4e63b64389b1d50f3388&sigparams=cdn,expires,len,oi,pt,qn,trid&cdn=cn-gotcha01&sign=2ba76096de8def5a6a12bb6b6d488254&sk=389f0685dcc3bfe1d06dc4d3cd9591b0&flvsk=d4297950af2aa254a0e8a2a7dd98bd82&p2p_type=1&src=57345&sl=10&free_type=0&sid=cn-hbyc-ct-02-17&chash=0&sche=ban&bvchls=1&score=18&pp=rtmp&machinezone=ylf&source=onetier&site=fa3e53c76006ad4caa7a06f5e3af080b&order=2'}, {'线路2_4000': 'https://cn-hbyc-ct-02-17.bilivideo.com/live-bvc/452545/live_7734200_bs_7236416_4000/index.m3u8?expires=1666425106&len=0&oi=1996077370&pt=web&qn=4000&trid=1007142a47f980ab4e63b64389b1d50f3388&sigparams=cdn,expires,len,oi,pt,qn,trid&cdn=cn-gotcha01&sign=2ba76096de8def5a6a12bb6b6d488254&sk=389f0685dcc3bfe1d06dc4d3cd9591b0&flvsk=d4297950af2aa254a0e8a2a7dd98bd82&p2p_type=1&src=57345&sl=10&free_type=0&sid=cn-hbyc-ct-02-17&chash=0&sche=ban&bvchls=1&score=18&pp=rtmp&machinezone=ylf&source=onetier&site=fa3e53c76006ad4caa7a06f5e3af080b&order=2'}, {'线路2_2500': 'https://cn-hbyc-ct-02-17.bilivideo.com/live-bvc/452545/live_7734200_bs_7236416_2500/index.m3u8?expires=1666425106&len=0&oi=1996077370&pt=web&qn=2500&trid=1007142a47f980ab4e63b64389b1d50f3388&sigparams=cdn,expires,len,oi,pt,qn,trid&cdn=cn-gotcha01&sign=2ba76096de8def5a6a12bb6b6d488254&sk=389f0685dcc3bfe1d06dc4d3cd9591b0&flvsk=d4297950af2aa254a0e8a2a7dd98bd82&p2p_type=1&src=57345&sl=10&free_type=0&sid=cn-hbyc-ct-02-17&chash=0&sche=ban&bvchls=1&score=18&pp=rtmp&machinezone=ylf&source=onetier&site=fa3e53c76006ad4caa7a06f5e3af080b&order=2'}, {'线路2_1500': 'https://cn-hbyc-ct-02-17.bilivideo.com/live-bvc/452545/live_7734200_bs_7236416_1500/index.m3u8?expires=1666425106&len=0&oi=1996077370&pt=web&qn=1500&trid=1007142a47f980ab4e63b64389b1d50f3388&sigparams=cdn,expires,len,oi,pt,qn,trid&cdn=cn-gotcha01&sign=2ba76096de8def5a6a12bb6b6d488254&sk=389f0685dcc3bfe1d06dc4d3cd9591b0&flvsk=d4297950af2aa254a0e8a2a7dd98bd82&p2p_type=1&src=57345&sl=10&free_type=0&sid=cn-hbyc-ct-02-17&chash=0&sche=ban&bvchls=1&score=18&pp=rtmp&machinezone=ylf&source=onetier&site=fa3e53c76006ad4caa7a06f5e3af080b&order=2'}, {'线路3_10000': 'https://d1--cn-gotcha204.bilivideo.com/live-bvc/452545/live_7734200_bs_7236416_bluray/index.m3u8?expires=1666425106&len=0&oi=1996077370&pt=web&qn=10000&trid=1007142a47f980ab4e63b64389b1d50f3388&sigparams=cdn,expires,len,oi,pt,qn,trid&cdn=cn-gotcha204&sign=564bb886cf9c01437bd03a1170932bbf&sk=389f0685dcc3bfe1d06dc4d3cd9591b0&p2p_type=1&src=57345&sl=10&free_type=0&pp=rtmp&machinezone=ylf&source=onetier&site=fa3e53c76006ad4caa7a06f5e3af080b&order=3'}, {'线路3_4000': 'https://d1--cn-gotcha204.bilivideo.com/live-bvc/452545/live_7734200_bs_7236416_4000/index.m3u8?expires=1666425106&len=0&oi=1996077370&pt=web&qn=4000&trid=1007142a47f980ab4e63b64389b1d50f3388&sigparams=cdn,expires,len,oi,pt,qn,trid&cdn=cn-gotcha204&sign=564bb886cf9c01437bd03a1170932bbf&sk=389f0685dcc3bfe1d06dc4d3cd9591b0&p2p_type=1&src=57345&sl=10&free_type=0&pp=rtmp&machinezone=ylf&source=onetier&site=fa3e53c76006ad4caa7a06f5e3af080b&order=3'}, {'线路3_2500': 'https://d1--cn-gotcha204.bilivideo.com/live-bvc/452545/live_7734200_bs_7236416_2500/index.m3u8?expires=1666425106&len=0&oi=1996077370&pt=web&qn=2500&trid=1007142a47f980ab4e63b64389b1d50f3388&sigparams=cdn,expires,len,oi,pt,qn,trid&cdn=cn-gotcha204&sign=564bb886cf9c01437bd03a1170932bbf&sk=389f0685dcc3bfe1d06dc4d3cd9591b0&p2p_type=1&src=57345&sl=10&free_type=0&pp=rtmp&machinezone=ylf&source=onetier&site=fa3e53c76006ad4caa7a06f5e3af080b&order=3'}, {'线路3_1500': 'https://d1--cn-gotcha204.bilivideo.com/live-bvc/452545/live_7734200_bs_7236416_1500/index.m3u8?expires=1666425106&len=0&oi=1996077370&pt=web&qn=1500&trid=1007142a47f980ab4e63b64389b1d50f3388&sigparams=cdn,expires,len,oi,pt,qn,trid&cdn=cn-gotcha204&sign=564bb886cf9c01437bd03a1170932bbf&sk=389f0685dcc3bfe1d06dc4d3cd9591b0&p2p_type=1&src=57345&sl=10&free_type=0&pp=rtmp&machinezone=ylf&source=onetier&site=fa3e53c76006ad4caa7a06f5e3af080b&order=3'}, {'rid': '6'}]}
+    app = QApplication(sys.argv)
+    favorites = RealList(real_dict_)
+    favorites.show()
+    sys.exit(app.exec_())
