@@ -13,6 +13,7 @@ import urllib.parse
 import hashlib
 import time
 
+
 class HuYa:
     def __init__(self, rid):
         self.rid = rid
@@ -36,9 +37,8 @@ class HuYa:
         url = "{}?wsSecret={}&wsTime={}&u={}&seqid={}&{}".format(i, m, l, t, f, y)
         return url
 
-
     def get_real_url(self):
-        real_list = []
+        real_lists = []
         try:
             room_url = 'https://m.huya.com/{}'.format(self.rid)
             header = {
@@ -46,24 +46,49 @@ class HuYa:
                 'User-Agent': 'Mozilla/5.0 (Linux; Android 5.0; SM-G900P Build/LRX21T) AppleWebKit/537.36 (KHTML, like Gecko) '
                               'Chrome/75.0.3770.100 Mobile Safari/537.36 '
             }
-            response = requests.get(url=room_url, headers=header).text
+            response = requests.get(url=room_url, headers=header, timeout=2).text
             liveLineUrl = re.findall(r'"liveLineUrl":"([\s\S]*?)",', response)[0]
             liveline = base64.b64decode(liveLineUrl).decode('utf-8')
+
             if liveline:
                 if 'replay' in liveline:
                     return '直播录像：' + liveline
                 else:
                     liveline = self.live(liveline)
-                    real_url = ("https:" + liveline).replace("hls", "flv").replace("m3u8", "flv").replace('&ctype=tars_mobile', '')
-                    if '.m3u8' in real_url:
-                        real_list.append({'m3u8':real_url})
-                    elif '.flv' in real_url:
-                        real_list.append({'flv': real_url})
-        except:
-            print('未开播或直播间不存在')
+                    real_url = ("https:" + liveline).replace("hls", "flv").replace("m3u8", "flv").replace(
+                        '&ctype=tars_mobile', '')
+                    rate = re.findall('264_(\d+)', real_url)
+                    if not rate:
+                        rate = [500, 4000, 8000, 10000]
 
+                    for ratio in range(len(rate) - 1, -1, -1):
+                        ratio = rate[ratio]
+
+                        if ratio != 10000:
+                            real_url_ = real_url.replace('.flv?', f'.flv?ratio={ratio}&')
+                            real_lists.append({f'flv_{ratio}': real_url_})
+                        else:
+                            real_lists.append({f'flv_{ratio}': real_url})
+        except:
+            print('huya:未开播或直播间不存在')
+        real_list = []
+        for real_ in real_lists:
+            real_list.append(real_)
+            for url_ in real_:
+                try:
+                    code = requests.get(real_[url_], stream=True, timeout=2).status_code
+                    if code != 200:
+                        real_list.remove(real_)
+                except:
+                    real_list.remove(real_)
         huya_dict = {}
         if real_list:
+            real_list.append({'rid': self.rid})
             huya_dict['huya'] = real_list
         if huya_dict:
             return huya_dict
+
+# rid = input('输入虎牙直播房间号：\n')
+# real_url = HuYa(rid)
+# print('该直播间源地址为：')
+# print(real_url.get_real_url())
