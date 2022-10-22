@@ -55,7 +55,11 @@ class DouYin:
         real_list = []
         for real_ in douyin_list:
             for name_ in real_:
-                real_list.append({name_: real_[name_]})
+                if '.flv' in real_[name_]:
+                    real_list.append({f'flv_{name_}': real_[name_]})
+                elif '.m3u8' in real_[name_]:
+                    real_list.append({f'm3u8_{name_}': real_[name_]})
+
         for count, real_ in enumerate(real_list):
             for url_ in real_:
                 try:
@@ -67,6 +71,7 @@ class DouYin:
         douyin_dict = {}
 
         if real_list:
+            real_list.append({'rid': self.rid})
             douyin_dict['douyin'] = real_list
         if douyin_dict:
             return douyin_dict
@@ -90,7 +95,6 @@ class DouYin:
             ('room_id', room_id),
             ('app_id', '1128'),
             ('X-Bogus', '1'),
-
         )
 
         response = requests.get('https://webcast.amemv.com/webcast/room/reflow/info/?', headers=headers,
