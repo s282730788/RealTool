@@ -286,6 +286,14 @@ class RidList(RoundShadow, QWidget):
                 real_height += 50
                 self.label_scroll.setMinimumHeight(real_height)
 
+    def kugou_get_room_id(self, url):
+        headers = {
+            'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 10_3_1 like Mac OS X) AppleWebKit/603.1.30 (KHTML, like Gecko) Version/10.0 Mobile/14E304 Safari/602.1',
+        }
+        res = requests.get(url, headers, timeout=2).text
+        rid = re.findall('roomId=(\d+)', res)[0]
+        return rid
+
     def get_room_id(self, url):
         headers = {
             'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 10_3_1 like Mac OS X) AppleWebKit/603.1.30 (KHTML, like Gecko) Version/10.0 Mobile/14E304 Safari/602.1',
@@ -317,7 +325,10 @@ class RidList(RoundShadow, QWidget):
             if 'live.douyin.com' in rid:
                 rid = re.findall('(\d+)', rid)[0]
             elif 'v.douyin.com' in rid:
-                rid = self.get_room_id(rid)
+                try:
+                    rid = self.get_room_id(rid)
+                except:
+                    rid = ""
             elif 'live.bilibili.com' in rid:
                 rid = re.search('\d+', rid).group()
             elif 'douyu.com' in rid:
@@ -327,7 +338,20 @@ class RidList(RoundShadow, QWidget):
                     rid = re.search('\d+', rid).group()
             elif 'huya.com' in rid:
                 rid = rid.split("/")[-1]
+            elif 'yy.com' in rid:
+                rid = re.findall('/(\d+)/', rid)[0]
+            elif 'kuwo.cn' in rid:
+                rid = re.findall('/(\d+)', rid)[0]
+            elif 'kugou.com' in rid:
+                if 'channel' in rid:
+                    try:
+                        rid = self.kugou_get_room_id(rid)
+                    except:
+                        rid = ""
+                else:
+                    rid = re.findall('/(\d+)', rid)[0]
             self.rid_dict.update({index: rid})
+
 
         else:
             self.rid_dict.pop(index)
@@ -376,4 +400,3 @@ if __name__ == '__main__':
     real_rid = RidList()
     real_rid.show()
     sys.exit(app.exec_())
-    
