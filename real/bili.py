@@ -11,6 +11,10 @@
 # qn=10000原画
 import requests
 import re
+import sys
+# sys.path.insert(0, '..')
+from .requests_code import requests_get_code
+from multiprocessing.pool import ThreadPool
 
 
 class BiliBili:
@@ -26,28 +30,29 @@ class BiliBili:
             'User-Agent': 'Mozilla/5.0 (iPod; CPU iPhone OS 14_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, '
                           'like Gecko) CriOS/87.0.4280.163 Mobile/15E148 Safari/604.1',
         }
+
+    def get_real_url(self):
         # 先获取直播状态和真实房间号
         r_url = 'https://api.live.bilibili.com/room/v1/Room/room_init'
         param = {
-            'id': rid
+            'id': self.rid
         }
         with requests.Session() as self.s:
             res = self.s.get(r_url, headers=self.header, params=param, timeout=2).json()
-        if res['msg'] == '直播间不存在':
-            raise Exception(f'bilibili {rid} {res["msg"]}')
+        if '不存在' in res['msg']:
+            return {}
         live_status = res['data']['live_status']
         if live_status != 1:
-            raise Exception(f'bilibili {rid} 未开播')
+            return {}
         self.real_room_id = res['data']['room_id']
 
-    def get_real_url(self, current_qn: int = 10000) -> dict:
         url = 'https://api.live.bilibili.com/xlive/web-room/v2/index/getRoomPlayInfo'
         param = {
             'room_id': self.real_room_id,
             'protocol': '0,1',
             'format': '0,1,2',
             'codec': '0,1',
-            'qn': current_qn,
+            'qn': 10000,
             'platform': 'web',
             'ptype': 8,
         }
@@ -55,8 +60,11 @@ class BiliBili:
         stream_info = res['data']['playurl_info']['playurl']['stream']
         accept_qn = stream_info[0]['format'][0]['codec'][0]['accept_qn']
 
-        bili_dict = {}
+        real_lists = []
         real_list = []
+        thread_list = []
+        real_dict = {}
+
         for data in stream_info:
             format_name = data['format'][0]['format_name']
             if format_name == 'ts':
@@ -74,23 +82,22 @@ class BiliBili:
                             continue
 
                         extra = re.sub('qn=(\d+)', f'qn={qn}', extra)
-                        real_list.append({f'线路{i + 1}_{qn}': f'{host}{url_}{extra}'})
+                        real_lists.append({f'线路{i + 1}_{qn}': f'{host}{url_}{extra}'})
                 break
-
-        for real_ in real_list:
-            for url_ in real_:
-                try:
-                    response = requests.get(real_[url_], stream=True, timeout=2)
-                    code = response.status_code
-                    if code != 200:
-                        real_list.remove(real_)
-                except:
-                    real_list.remove(real_)
-        if real_list:
-            real_list.append({'rid': self.rid})
-            bili_dict['bili'] = real_list
-        if bili_dict:
-            return bili_dict
+        if real_lists:
+            pool = ThreadPool(processes=int(len(real_lists)))
+            for real_ in real_lists:
+                thread_list.append(pool.apply_async(requests_get_code, args=(real_,)))
+            for thread in thread_list:
+                return_dict = thread.get()
+                if return_dict:
+                    real_list.append(return_dict)
+            if real_list:
+                real_list.append({'rid': self.rid})
+                real_dict['bili'] = real_list
+            if real_dict:
+                return real_dict
+        return {}
 
 # if __name__ == '__main__':
 #     rid = '6'

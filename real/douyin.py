@@ -8,8 +8,10 @@ import re
 import json
 import requests
 import urllib.parse
-
-DEBUG = False
+import sys
+# sys.path.insert(0, '..')
+from .requests_code import requests_get_code
+from multiprocessing.pool import ThreadPool
 
 
 class DouYin:
@@ -52,29 +54,39 @@ class DouYin:
         except:
             pass
 
+        real_lists = []
         real_list = []
+        thread_list = []
+        real_dict = {}
+
         for real_ in douyin_list:
             for name_ in real_:
                 if '.flv' in real_[name_]:
-                    real_list.append({f'flv_{name_}': real_[name_]})
+                    real_lists.append({f'flv_{name_}': real_[name_]})
                 elif '.m3u8' in real_[name_]:
-                    real_list.append({f'm3u8_{name_}': real_[name_]})
+                    real_lists.append({f'm3u8_{name_}': real_[name_]})
 
-        for count, real_ in enumerate(real_list):
+        for count, real_ in enumerate(real_lists):
             for url_ in real_:
                 try:
-                    if requests.get(real_[url_], stream=True, timeout=3).status_code != 200:
-                        real_list.remove(real_list[count])
+                    if requests_get_code(real_[url_]) != 200:
+                        real_lists.remove(real_lists[count])
                 except:
-                    real_list.remove(real_list[count])
-
-        douyin_dict = {}
-
-        if real_list:
-            real_list.append({'rid': self.rid})
-            douyin_dict['douyin'] = real_list
-        if douyin_dict:
-            return douyin_dict
+                    real_lists.remove(real_lists[count])
+        if real_lists:
+            pool = ThreadPool(processes=int(len(real_lists)))
+            for real_ in real_lists:
+                thread_list.append(pool.apply_async(requests_get_code, args=(real_,)))
+            for thread in thread_list:
+                return_dict = thread.get()
+                if return_dict:
+                    real_list.append(return_dict)
+            if real_list:
+                real_list.append({'rid': self.rid})
+                real_dict['douyin'] = real_list
+            if real_dict:
+                return real_dict
+        return {}
 
     def get_room_id(self, url):
         headers = {

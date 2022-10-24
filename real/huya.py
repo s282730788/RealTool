@@ -12,7 +12,9 @@ import base64
 import urllib.parse
 import hashlib
 import time
-
+import sys
+from .requests_code import requests_get_code
+from multiprocessing.pool import ThreadPool
 
 class HuYa:
     def __init__(self, rid):
@@ -39,6 +41,9 @@ class HuYa:
 
     def get_real_url(self):
         real_lists = []
+        real_list = []
+        thread_list = []
+        real_dict = {}
         try:
             room_url = 'https://m.huya.com/{}'.format(self.rid)
             header = {
@@ -52,7 +57,7 @@ class HuYa:
 
             if liveline:
                 if 'replay' in liveline:
-                    return '直播录像：' + liveline
+                    real_lists.append({'直播录像': f'https://{liveline}'})
                 else:
                     liveline = self.live(liveline)
                     real_url = ("https:" + liveline).replace("hls", "flv").replace("m3u8", "flv").replace(
@@ -70,23 +75,22 @@ class HuYa:
                         else:
                             real_lists.append({f'flv_{ratio}': real_url})
         except:
-            print('huya:未开播或直播间不存在')
-        real_list = []
-        for real_ in real_lists:
-            real_list.append(real_)
-            for url_ in real_:
-                try:
-                    code = requests.get(real_[url_], stream=True, timeout=2).status_code
-                    if code != 200:
-                        real_list.remove(real_)
-                except:
-                    real_list.remove(real_)
-        huya_dict = {}
-        if real_list:
-            real_list.append({'rid': self.rid})
-            huya_dict['huya'] = real_list
-        if huya_dict:
-            return huya_dict
+            pass
+        if real_lists:
+            pool = ThreadPool(processes=int(len(real_lists)))
+            for real_ in real_lists:
+                thread_list.append(pool.apply_async(requests_get_code, args=(real_,)))
+            for thread in thread_list:
+                return_dict = thread.get()
+                if return_dict:
+                    real_list.append(return_dict)
+            if real_list:
+                real_list.append({'rid': self.rid})
+                real_dict['huya'] = real_list
+            if real_dict:
+                return real_dict
+        return {}
+
 
 # rid = input('输入虎牙直播房间号：\n')
 # real_url = HuYa(rid)
