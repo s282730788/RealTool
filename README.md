@@ -8,8 +8,9 @@ RealTool是一款获取直播源链接的软件，支持获取【**斗鱼**】�
 
 ## 关于开源
 本软件的获取链接是基于两位大佬的开源项目
- 获取直播源开源链接wbt5：https://github.com/wbt5/real-url
- m3u8录制开源链接nilaoda：https://github.com/nilaoda/N_m3u8DL-RE
+1. 获取直播源开源链接wbt5：https://github.com/wbt5/real-url
+2. m3u8录制开源链接nilaoda：https://github.com/nilaoda/N_m3u8DL-RE
+
 
 ### RealTool开源项目链接：https://github.com/s282730788/RealTool
 
