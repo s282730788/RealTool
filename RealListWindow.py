@@ -1,7 +1,7 @@
 #  -*- coding: utf-8 -*-
 # @Time:2022/10/15   5:41
 # @Author: 须尽欢
-# @File:RealUrl.py
+# @File:RealListWindow.py
 # Software:PyCharm
 
 import sys
@@ -228,7 +228,6 @@ class RealList(RoundShadow, QWidget):
         self.setup_ui()
 
     def setup_ui(self):
-        # self.resize(850, 600)
         self.setWindowFlags(
             QtCore.Qt.Window | QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowSystemMenuHint | QtCore.Qt.WindowMinimizeButtonHint | QtCore.Qt.WindowMaximizeButtonHint)  # 隐藏标题栏且可以任务栏最小化
         self.setMinimumSize(QtCore.QSize(850, 610))  # 设置透明窗口最小尺寸
@@ -560,6 +559,12 @@ class RealList(RoundShadow, QWidget):
                     border_color = '#FE2B54'
                 elif 'huya' in name:
                     border_color = '#FFAB08'
+                elif 'yy' in name:
+                    border_color = '#FFE600'
+                elif 'kuwo' in name:
+                    border_color = '#CB83F7'
+                elif 'kugou' in name:
+                    border_color = '#01D07F'
 
                 vbox_list = QVBoxLayout()
                 vbox_list.setSpacing(0)
@@ -576,7 +581,7 @@ class RealList(RoundShadow, QWidget):
                 hbox_title.addLayout(self.add_layout_title_save_all(name, self.real_dict[name], border_color, self.real_dict[name][-1]['rid']))
                 vbox_url = QVBoxLayout(label_url_background)
                 for count, url_dict in enumerate(self.real_dict[name]):
-                    real_height += 90
+                    real_height += 95
                     list_height += 80
                     label_url_background.setFixedSize(800, list_height)
                     vbox_list.addLayout(hbox_title)
@@ -602,5 +607,3 @@ if __name__ == '__main__':
     favorites = RealList(real_dict_)
     favorites.show()
     sys.exit(app.exec_())
-
-    
