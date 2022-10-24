@@ -23,17 +23,21 @@ import config_ini
 import re
 import requests
 import ast
+from multiprocessing.pool import ThreadPool
 
 from real.douyu import DouYu
 from real.huya import HuYa
 from real.bili import BiliBili
 from real.douyin import DouYin
-from RealUrl import RealList
+from real.yy import YY
+from real.kuwo import KuWo
+from real.kugou import KuGou
+from RealListWindow import RealList
 from RealRid import RidList
 
 
 class ThreadGet(QThread):
-    _signal = pyqtSignal(dict)
+    _signal = pyqtSignal(dict, str)
 
     def __init__(self, real_list):
         super(ThreadGet, self).__init__()
@@ -42,50 +46,56 @@ class ThreadGet(QThread):
 
     def run(self):
         real_dict = {}
+        thread_list = []
+        pool = ThreadPool(processes=10)
+        count = 1
         for rid in self.real_list:
-            self.real_id = rid
-            for real_ in self.config['real']:
+            for real_name_dict in self.config['real']:
                 try:
-                    if real_ == "douyu":
-                        if self.config['real'][real_] == "1":
-                            douyu = DouYu(rid)
-                            douyu_dict = douyu.get_real_url()
-                            if douyu_dict:
-                                real_dict.update(douyu_dict)
-                except Exception as err:
-                    print("douyu:%s" % err)
+                    if real_name_dict == "douyu" and self.config['real'][real_name_dict] == "1":
+                        real_class = DouYu(rid)
+                        thread_list.append(pool.apply_async(real_class.get_real_url))
 
-                try:
-                    if real_ == "huya":
-                        if self.config['real'][real_] == "1":
-                            huya = HuYa(rid)
-                            huya_dict = huya.get_real_url()
-                            if huya_dict:
-                                real_dict.update(huya_dict)
-                except Exception as err:
-                    print("huya:%s" % err)
-                try:
-                    if real_ == "bili":
-                        if self.config['real'][real_] == "1":
-                            bili = BiliBili(rid)
-                            bili_dict = bili.get_real_url()
-                            if bili_dict:
-                                real_dict.update(bili_dict)
-                except Exception as err:
-                    print("bili:%s" % err)
+                    if real_name_dict == "huya" and self.config['real'][real_name_dict] == "1":
+                        real_class = HuYa(rid)
+                        thread_list.append(pool.apply_async(real_class.get_real_url))
 
-                try:
-                    if real_ == "douyin":
-                        if self.config['real'][real_] == "1":
-                            douyin = DouYin(rid)
-                            douyin_dict = douyin.get_real_url()
-                            if douyin_dict:
-                                real_dict.update(douyin_dict)
+                    if real_name_dict == "bili" and self.config['real'][real_name_dict] == "1":
+                        real_class = BiliBili(rid)
+                        thread_list.append(pool.apply_async(real_class.get_real_url))
+
+                    if real_name_dict == "douyin" and self.config['real'][real_name_dict] == "1":
+                        real_class = DouYin(rid)
+                        thread_list.append(pool.apply_async(real_class.get_real_url))
+
+                    if real_name_dict == "yy" and self.config['real'][real_name_dict] == "1":
+                        real_class = YY(rid)
+                        thread_list.append(pool.apply_async(real_class.get_real_url))
+
+                    if real_name_dict == "kuwo" and self.config['real'][real_name_dict] == "1":
+                        real_class = KuWo(rid)
+                        thread_list.append(pool.apply_async(real_class.get_real_url))
+
+                    if real_name_dict == "kugou" and self.config['real'][real_name_dict] == "1":
+                        real_class = KuGou(rid)
+                        thread_list.append(pool.apply_async(real_class.get_real_url))
                 except Exception as err:
-                    print("douyin:%s" % err)
-            print(real_dict)
+                    print("err:%s" % err)
+        for thread in thread_list:
+            return_dict = thread.get()
+            if return_dict:
+                if real_dict:
+                    if list(return_dict.keys())[0] == list(real_dict.keys())[0]:
+                        return_dict.update(
+                            {f'{list(return_dict.keys())[0]}_{count}': return_dict.pop(list(return_dict.keys())[0])})
+                        count += 1
+                real_dict.update(return_dict)
         if real_dict:
-            self._signal.emit(real_dict)
+            pool.close()
+            self._signal.emit(real_dict, 'true')
+        else:
+            pool.close()
+            self._signal.emit(real_dict, 'false')
 
 
 class ButtonGet(QtWidgets.QPushButton):
@@ -418,14 +428,23 @@ class MainUi(QWidget):
         self.real_huya = QtWidgets.QAction("虎牙直播", self.menu_real)
         self.real_bili = QtWidgets.QAction("哔哩直播", self.menu_real)
         self.real_douyin = QtWidgets.QAction("抖音直播", self.menu_real)
+        self.real_yy = QtWidgets.QAction("歪歪直播", self.menu_real)
+        self.real_kuwo = QtWidgets.QAction("酷我直播", self.menu_real)
+        self.real_kugou = QtWidgets.QAction("酷狗直播", self.menu_real)
         self.menu_real.addAction(self.real_douyu)
         self.menu_real.addAction(self.real_huya)
         self.menu_real.addAction(self.real_bili)
         self.menu_real.addAction(self.real_douyin)
+        self.menu_real.addAction(self.real_yy)
+        self.menu_real.addAction(self.real_kuwo)
+        self.menu_real.addAction(self.real_kugou)
         self.real_douyu.setCheckable(True)
         self.real_huya.setCheckable(True)
         self.real_bili.setCheckable(True)
         self.real_douyin.setCheckable(True)
+        self.real_yy.setCheckable(True)
+        self.real_kuwo.setCheckable(True)
+        self.real_kugou.setCheckable(True)
 
         self.menu_about = QtWidgets.QMenu("关于软件", self.menu_tool)
         self.about_down = QtWidgets.QAction("下载地址", self.menu_about)
@@ -471,6 +490,9 @@ class MainUi(QWidget):
         self.real_huya.triggered.connect(self.real_live_)
         self.real_bili.triggered.connect(self.real_live_)
         self.real_douyin.triggered.connect(self.real_live_)
+        self.real_yy.triggered.connect(self.real_live_)
+        self.real_kuwo.triggered.connect(self.real_live_)
+        self.real_kugou.triggered.connect(self.real_live_)
         self.pushbutton_logo.clicked.connect(lambda: self.real_window())
 
     def real_rid_(self):
@@ -499,7 +521,7 @@ class MainUi(QWidget):
             self.real_list = RealList(self.real_dict)
             self.real_list.show()
 
-    def get_room_id(self, url):
+    def douyin_get_room_id(self, url):
         headers = {
             'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 10_3_1 like Mac OS X) AppleWebKit/603.1.30 (KHTML, like Gecko) Version/10.0 Mobile/14E304 Safari/602.1',
         }
@@ -526,6 +548,14 @@ class MainUi(QWidget):
         if response:
             return response['data']['room']['owner']['web_rid']
 
+    def kugou_get_room_id(self, url):
+        headers = {
+            'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 10_3_1 like Mac OS X) AppleWebKit/603.1.30 (KHTML, like Gecko) Version/10.0 Mobile/14E304 Safari/602.1',
+        }
+        res = requests.get(url, headers, timeout=2).text
+        rid = re.findall('roomId=(\d+)', res)[0]
+        return rid
+
     def thread_get(self):
         self.config = ConfigObj("config.ini", encoding="UTF8")
         rid = self.lineedit_input.text()
@@ -535,7 +565,10 @@ class MainUi(QWidget):
             if 'live.douyin.com' in rid:
                 rid = re.findall('(\d+)', rid)[0]
             elif 'v.douyin.com' in rid:
-                rid = self.get_room_id(rid)
+                try:
+                    rid = self.douyin_get_room_id(rid)
+                except:
+                    rid = ""
             elif 'live.bilibili.com' in rid:
                 rid = re.search('\d+', rid).group()
             elif 'douyu.com' in rid:
@@ -545,6 +578,19 @@ class MainUi(QWidget):
                     rid = re.search('\d+', rid).group()
             elif 'huya.com' in rid:
                 rid = rid.split("/")[-1]
+            elif 'yy.com' in rid:
+                rid = re.findall('/(\d+)/', rid)[0]
+            elif 'kuwo.cn' in rid:
+                rid = re.findall('/(\d+)', rid)[0]
+            elif 'kugou.com' in rid:
+                if 'channel' in rid:
+                    try:
+                        rid = self.kugou_get_room_id(rid)
+                    except:
+                        rid = ""
+                else:
+                    rid = re.findall('/(\d+)', rid)[0]
+
             rid_list.append(rid)
             self.lineedit_input.setText(rid)
             self.thread = ThreadGet(rid_list)
@@ -570,13 +616,16 @@ class MainUi(QWidget):
                                                                                                             border-image: url('./image/logo_get.png');
                                                                                                             }""")
 
-    def text(self, real_dict):
+    def text(self, real_dict, text):
+        if text == 'true':
+            self.real_dict = real_dict
+            self.real_window()
+        elif text == 'false':
+            self.lineedit_input.setText("直播源获取失败")
         self.pushbutton_logo.setStyleSheet("""QPushButton{
                                                                                         border-image: url('./image/logo.png');
                                                                                         }""")
         QApplication.processEvents()
-        self.real_dict = real_dict
-        self.real_window()
 
     def real_live_(self):
         self.config = ConfigObj("config.ini", encoding="UTF8")
@@ -584,6 +633,9 @@ class MainUi(QWidget):
         self.config['real']['huya'] = "0"
         self.config['real']['bili'] = "0"
         self.config['real']['douyin'] = "0"
+        self.config['real']['yy'] = "0"
+        self.config['real']['kuwo'] = "0"
+        self.config['real']['kugou'] = "0"
         if self.real_douyu.isChecked():
             self.config['real']['douyu'] = "1"
         if self.real_huya.isChecked():
@@ -592,6 +644,12 @@ class MainUi(QWidget):
             self.config['real']['bili'] = "1"
         if self.real_douyin.isChecked():
             self.config['real']['douyin'] = "1"
+        if self.real_yy.isChecked():
+            self.config['real']['yy'] = "1"
+        if self.real_kuwo.isChecked():
+            self.config['real']['kuwo'] = "1"
+        if self.real_kugou.isChecked():
+            self.config['real']['kugou'] = "1"
         self.config.write()
 
     def initial_live(self):
@@ -609,6 +667,15 @@ class MainUi(QWidget):
             if real_ == 'douyin':
                 if self.config['real'][real_] == "1":
                     self.real_douyin.setChecked(True)
+            if real_ == 'yy':
+                if self.config['real'][real_] == "1":
+                    self.real_yy.setChecked(True)
+            if real_ == 'kuwo':
+                if self.config['real'][real_] == "1":
+                    self.real_kuwo.setChecked(True)
+            if real_ == 'kugou':
+                if self.config['real'][real_] == "1":
+                    self.real_kugou.setChecked(True)
 
     def background_image_(self):
         getcwd_file = '{}/image/'.format(os.getcwd())
@@ -841,5 +908,3 @@ if __name__ == "__main__":
     ui = MainUi()
     ui.show()
     sys.exit(app.exec_())
-
-    
