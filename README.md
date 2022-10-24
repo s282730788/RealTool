@@ -7,10 +7,9 @@
 RealTool是一款获取直播源链接的软件，支持获取【**斗鱼**】【**虎牙**】【**B站**】【**抖音**】【**YY**】【**酷我**】【**酷狗**】的直播源链接，并且支持录制等功能！
 
 ## 关于开源
-本软件的获取链接是基于
-1. 获取直播源开源链接wbt5：https://github.com/wbt5/real-url
-2. m3u8录制开源链接nilaoda：https://github.com/nilaoda/N_m3u8DL-RE
-两位大佬的开源项目，所以此次直播源获取软件也开源了
+本软件的获取链接是基于两位大佬的开源项目
+ 获取直播源开源链接wbt5：https://github.com/wbt5/real-url
+ m3u8录制开源链接nilaoda：https://github.com/nilaoda/N_m3u8DL-RE
 
 ### RealTool开源项目链接：https://github.com/s282730788/RealTool
 
