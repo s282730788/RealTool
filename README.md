@@ -12,8 +12,6 @@ RealTool是一款获取直播源链接的软件，支持获取【**斗鱼**】�
 2. m3u8录制开源链接nilaoda：https://github.com/nilaoda/N_m3u8DL-RE
 
 
-### RealTool开源项目链接：https://github.com/s282730788/RealTool
-
 ### 2022年10月22日
 
 **修复虎牙斗鱼直播源无法正确获取的问题，这是上版本修改过程中出现的BUG，现已修复！**
