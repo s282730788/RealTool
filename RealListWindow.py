@@ -581,7 +581,7 @@ class RealList(RoundShadow, QWidget):
                 hbox_title.addLayout(self.add_layout_title_save_all(name, self.real_dict[name], border_color, self.real_dict[name][-1]['rid']))
                 vbox_url = QVBoxLayout(label_url_background)
                 for count, url_dict in enumerate(self.real_dict[name]):
-                    real_height += 95
+                    real_height += 110
                     list_height += 80
                     label_url_background.setFixedSize(800, list_height)
                     vbox_list.addLayout(hbox_title)
