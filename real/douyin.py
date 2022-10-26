@@ -41,7 +41,6 @@ class DouYin:
         json_ = json.loads(text)
         douyin_list = []
         try:
-
             flv_pull_url = json_['app']['initialState']['roomStore']['roomInfo']['room']['stream_url']['flv_pull_url']
             douyin_list.append(flv_pull_url)
         except:
@@ -66,13 +65,6 @@ class DouYin:
                 elif '.m3u8' in real_[name_]:
                     real_lists.append({f'm3u8_{name_}': real_[name_]})
 
-        for count, real_ in enumerate(real_lists):
-            for url_ in real_:
-                try:
-                    if requests_get_code(real_[url_]) != 200:
-                        real_lists.remove(real_lists[count])
-                except:
-                    real_lists.remove(real_lists[count])
         if real_lists:
             pool = ThreadPool(processes=int(len(real_lists)))
             for real_ in real_lists:
