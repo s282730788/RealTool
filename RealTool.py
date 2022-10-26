@@ -48,7 +48,6 @@ class ThreadGet(QThread):
         real_dict = {}
         thread_list = []
         pool = ThreadPool(processes=10)
-        count = 1
         for rid in self.real_list:
             for real_name_dict in self.config['real']:
                 try:
@@ -83,19 +82,24 @@ class ThreadGet(QThread):
                     print("err:%s" % err)
         for thread in thread_list:
             return_dict = thread.get()
+            count = 0
             if return_dict:
                 if real_dict:
-                    if list(return_dict.keys())[0] == list(real_dict.keys())[0]:
-                        return_dict.update(
-                            {f'{list(return_dict.keys())[0]}_{count}': return_dict.pop(list(return_dict.keys())[0])})
-                        count += 1
+                    for i in range(len(real_dict)):
+                        while list(return_dict.keys())[0] == list(real_dict.keys())[i]:
+                            count += 1
+                            if f'{list(return_dict.keys())[0].split("_")[0]}_{count}' != list(real_dict.keys())[i]:
+                                return_dict.update(
+                                    {f'{list(return_dict.keys())[0].split("_")[0]}_{count}': return_dict.pop(
+                                        list(return_dict.keys())[0])})
+                                break
+
                 real_dict.update(return_dict)
         if real_dict:
-            pool.close()
             self._signal.emit(real_dict, 'true')
         else:
-            pool.close()
             self._signal.emit(real_dict, 'false')
+        pool.close()
 
 
 class ButtonGet(QtWidgets.QPushButton):
