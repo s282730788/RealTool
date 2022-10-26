@@ -51,8 +51,7 @@ class KuWo:
             real_url = res['data']['horizontal'][0]['httpshls'][0]
         except (KeyError, IndexError):
             real_url = res['data']['vertical'][0]['httpshls'][0]
-        if requests_get_code(real_url) == 200:
-            real_lists.append({f'httpshls': real_url})
+        real_lists.append({f'httpshls': real_url})
         if real_lists:
             pool = ThreadPool(processes=int(len(real_lists)))
             for real_ in real_lists:
@@ -65,7 +64,6 @@ class KuWo:
                 real_list.append({'rid': self.rid})
                 real_dict['kuwo'] = real_list
                 return real_dict
-
         return {}
 
 
