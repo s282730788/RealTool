@@ -352,14 +352,14 @@ class RealList(RoundShadow, QWidget):
                                                     }
                                                     """ % b)
 
-    def add_layout_title_save_all(self, name, url_dict, border_color, rid):
+    def add_layout_title_save_all(self, live_name, url_dict, border_color, rid, nick_name):  # 平台名称，链接字典，border颜色，rid， 用户名称
 
         def save(url_link, url_name, count):
             save_path = "{}/real_save/{}".format(os.getcwd(), rid)
             if not os.path.exists("{}/real_save/{}".format(os.getcwd(), rid)):
                 os.makedirs(
                     "{}/real_save/{}".format(os.getcwd(), rid))
-            asx_path = "{}/{}_{}_{}.asx".format(save_path, name, url_name, count)
+            asx_path = "{}/{}_{}_{}_{}.asx".format(save_path, live_name, url_name, count, nick_name)
             if url_link:
                 asx_str = """
                 <asx version = "3.0" >
@@ -368,7 +368,7 @@ class RealList(RoundShadow, QWidget):
                 <ref href = "{}"/>
                 </entry>
                 </asx>
-                """.format(name, url_name, url_link)
+                """.format(live_name, url_name, url_link)
                 with open(asx_path, "w", encoding="UTF8") as f:
                     f.write(asx_str)
 
@@ -378,7 +378,7 @@ class RealList(RoundShadow, QWidget):
                     save(real_one[url_name], url_name, count)
             self.label_text("全部保存成功")
 
-        button_title_save_all = ButtonTitle(name, border_color)
+        button_title_save_all = ButtonTitle(live_name, border_color)
         button_title_save_all.clicked.connect(save_all)
 
         label_rid = QLabel()
@@ -392,17 +392,28 @@ class RealList(RoundShadow, QWidget):
                                                                     font-weight: bold;
                                                                     }""" % border_color)
 
+        label_name = QLabel()
+        label_name.setText(nick_name)
+        label_name.setFixedWidth(400)
+        label_name.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        label_name.setStyleSheet("""QLabel{
+                                                                            color:%s;
+                                                                            font-size:18px;
+                                                                            font-family:"Microsoft YaHei";
+                                                                            font-weight: bold;
+                                                                            }""" % border_color)
 
         hbox_title = QHBoxLayout()
         hbox_title.addWidget(button_title_save_all)
         hbox_title.addWidget(label_rid)
         hbox_title.addStretch()
+        hbox_title.addWidget(label_name)
         hbox_title.setContentsMargins(0, 0, 20, 0)  # 内边距
         hbox_title.setSpacing(20)
 
         return hbox_title
 
-    def add_layout_url(self, name, url_name, url_link, border_color, count, rid):
+    def add_layout_url(self, live_name, url_name, url_link, border_color, count, rid, nick_name):  # 平台名称，链接名称， 链接地址， border颜色，链接计数，用户名称
         label_name = QLabel()
         label_name.setText(url_name)
         label_name.setFixedSize(160, 32)
@@ -488,9 +499,8 @@ class RealList(RoundShadow, QWidget):
             if not os.path.exists("{}/real_save/{}".format(os.getcwd(), rid_)):
                 os.makedirs(
                     "{}/real_save/{}".format(os.getcwd(), rid_))
-            asx_path = "{}/{}.asx".format(save_path, name, url_name, count)
 
-            asx_path = "{}/{}_{}_{}.asx".format(save_path, name, url_name, count)
+            asx_path = "{}/{}_{}_{}_{}.asx".format(save_path, live_name, url_name, count, nick_name)
 
             def save():
                 if url_link:
@@ -501,7 +511,7 @@ class RealList(RoundShadow, QWidget):
                     <ref href = "{}"/>
                     </entry>
                     </asx>
-                    """.format(name, url_name, url_link)
+                    """.format(live_name, url_name, url_link)
 
                     with open(asx_path, "w", encoding="UTF8") as f:
                         f.write(asx_str)
@@ -514,7 +524,7 @@ class RealList(RoundShadow, QWidget):
                 subprocess.Popen("cmd.exe /C start {}".format(asx_path), shell=True)  # 此方法不显示黑窗口
                 self.label_text("打开文件")
             elif text == 'rec':
-                self.thread_rec = ThreadRec(name, url_link.strip(), rid_, url_name)
+                self.thread_rec = ThreadRec(live_name, url_link.strip(), rid_, url_name)
                 self.thread_rec.start()
                 self.label_text("正在录制...")
                 button_rec.setStyleSheet("""QPushButton{
@@ -569,6 +579,7 @@ class RealList(RoundShadow, QWidget):
                 vbox_list = QVBoxLayout()
                 vbox_list.setSpacing(0)
                 hbox_title = QHBoxLayout()
+                real_height += 62
                 list_height = 0
                 label_url_background = QLabel()
                 label_url_background.setStyleSheet("""QLabel{                                                
@@ -578,10 +589,10 @@ class RealList(RoundShadow, QWidget):
                                                                                         border-bottom-right-radius:5px;
                                                                                         }""" % border_color)
 
-                hbox_title.addLayout(self.add_layout_title_save_all(name, self.real_dict[name], border_color, self.real_dict[name][-1]['rid']))
+                hbox_title.addLayout(self.add_layout_title_save_all(name, self.real_dict[name], border_color, self.real_dict[name][-1]['rid'], self.real_dict[name][-2]['name']))
                 vbox_url = QVBoxLayout(label_url_background)
                 for count, url_dict in enumerate(self.real_dict[name]):
-                    real_height += 110
+                    real_height += 80
                     list_height += 80
                     label_url_background.setFixedSize(800, list_height)
                     vbox_list.addLayout(hbox_title)
@@ -589,8 +600,8 @@ class RealList(RoundShadow, QWidget):
                     vbox_list.setContentsMargins(0, 30, 0, 0)  # 内边距
                     vbox_list.setSpacing(0)
                     for url_name in url_dict:
-                        if url_name != 'rid':
-                            vbox_url.addLayout(self.add_layout_url(name, url_name, url_dict[url_name], border_color, count, self.real_dict[name][-1]['rid']))
+                        if url_name != 'rid' and url_name != 'name':
+                            vbox_url.addLayout(self.add_layout_url(name, url_name, url_dict[url_name], border_color, count, self.real_dict[name][-1]['rid'], self.real_dict[name][-2]['name']))
                     self.label_scroll.setMinimumHeight(real_height)
                     vbox_real.addLayout(vbox_list)
             vbox_real.addStretch()
