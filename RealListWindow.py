@@ -618,3 +618,5 @@ if __name__ == '__main__':
     favorites = RealList(real_dict_)
     favorites.show()
     sys.exit(app.exec_())
+
+    
