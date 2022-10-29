@@ -30,8 +30,22 @@ class YY:
         try:
             with requests.Session() as s:
                 res = s.get(room_url, headers=headers, timeout=2)
+                print(res.text)
         except:
             return {}
+        headers_web = {
+            'referer': f'https://www.yy.com/',
+            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36 '
+        }
+
+        name = ''
+        try:
+            url = 'https://www.yy.com/{}'.format(self.rid)
+            response = requests.get(url, headers=headers_web, timeout=2)
+            name = re.findall('<h2>(.*?)</h2>', response.text)[0]
+        except:
+            name = self.rid
+
         real_lists = []
         real_list = []
         thread_list = []
@@ -55,6 +69,7 @@ class YY:
                 if return_dict:
                     real_list.append(return_dict)
             if real_list:
+                real_list.append({'name': name})
                 real_list.append({'rid': self.rid})
                 real_dict['yy'] = real_list
                 return real_dict
