@@ -96,6 +96,7 @@ class ThreadGet(QThread):
 
                 real_dict.update(return_dict)
         if real_dict:
+            print(real_dict)
             self._signal.emit(real_dict, 'true')
         else:
             self._signal.emit(real_dict, 'false')
