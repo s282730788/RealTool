@@ -45,7 +45,6 @@ class BiliBili:
         if live_status != 1:
             return {}
         self.real_room_id = res['data']['room_id']
-
         url = 'https://api.live.bilibili.com/xlive/web-room/v2/index/getRoomPlayInfo'
         param = {
             'room_id': self.real_room_id,
@@ -57,9 +56,9 @@ class BiliBili:
             'ptype': 8,
         }
         res = self.s.get(url, headers=self.header, params=param, timeout=2).json()
+        uid = res['data']['uid']
         stream_info = res['data']['playurl_info']['playurl']['stream']
         accept_qn = stream_info[0]['format'][0]['codec'][0]['accept_qn']
-
         real_lists = []
         real_list = []
         thread_list = []
@@ -93,12 +92,27 @@ class BiliBili:
                 if return_dict:
                     real_list.append(return_dict)
             if real_list:
+                real_list.append({'name': self.name(uid)})
                 real_list.append({'rid': self.rid})
+
                 real_dict['bili'] = real_list
             if real_dict:
                 return real_dict
         return {}
 
+    def name(self, uid):
+        url = 'https://api.bilibili.com/x/space/acc/info?mid={}&token=&platform=web&jsonp=jsonp'.format(uid)
+        headers = {
+            'origin': 'https://space.bilibili.com',
+            'referer': 'https://space.bilibili.com/{}/'.format(uid),
+            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36',
+        }
+        response = requests.get(url, headers=headers, timeout=1).json()
+        name = response['data']['name']
+        if response:
+            return name
+        else:
+            return uid
 # if __name__ == '__main__':
 #     rid = '6'
 #     bili = BiliBili(rid)

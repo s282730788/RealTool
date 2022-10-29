@@ -4,12 +4,14 @@
 # @File:kugou.py
 # Software:PyCharm
 # 获取酷狗繁星直播的真实流媒体地址，默认最高码率。
+import re
 
 import requests
 import sys
 # sys.path.insert(0, '..')
 from .requests_code import requests_get_code
 from multiprocessing.pool import ThreadPool
+
 
 class KuGou:
 
@@ -40,6 +42,10 @@ class KuGou:
         thread_list = []
         real_dict = {}
         try:
+            name = self.name(self.rid)
+        except:
+            name = self.rid
+        try:
             res = self.s.get(self.url, params=params, timeout=2).json()
             if res['code'] == 1:
                 return {}
@@ -54,6 +60,7 @@ class KuGou:
                     real_lists.append({'httpshls': real_data_vertical[0]['httpshls'][0]})
             except:
                 return {}
+
             if real_lists:
                 pool = ThreadPool(processes=int(len(real_lists)))
                 for real_ in real_lists:
@@ -63,6 +70,7 @@ class KuGou:
                     if return_dict:
                         real_list.append(return_dict)
                 if real_list:
+                    real_list.append({'name': name})
                     real_list.append({'rid': self.rid})
                     real_dict['kugou'] = real_list
                     return real_dict
@@ -85,11 +93,17 @@ class KuGou:
                 }
                 res = self.s.get(self.url, params=params, timeout=2).json()
                 real_url = res.get('data').get('lines')[-1].get('streamProfiles')[-1]['httpsHls'][-1]
-                real_dict['kugou'] = [{'hls': real_url}, {'rid': self.rid}]
+                real_dict['kugou'] = [{'hls': real_url}, {'name': name}, {'rid': self.rid}]
                 return real_dict
             except:
                 return {}
 
+    def name(self, uid):
+        headers = {'user-agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36'}
+        url = 'https://fanxing.kugou.com/{}'.format(uid)
+        response = requests.get(url, headers=headers).text
+        name = re.findall("starName:'(.*?)'", response)[0]
+        return name
 
 # if __name__ == '__main__':
 #     rid = '6738148'

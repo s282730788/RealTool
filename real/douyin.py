@@ -36,9 +36,14 @@ class DouYin:
             "user-agent": "Mozilla/5.0(WindowsNT10.0;WOW64)AppleWebKit/537.36(KHTML,likeGecko)Chrome/86.0.4240.198Safari/537.36",
         }
         response = requests.get(url, headers=headers).text
+
         text = urllib.parse.unquote(
             re.findall('<script id="RENDER_DATA" type="application/json">(.*?)</script>', response)[0])
         json_ = json.loads(text)
+        try:
+            name = json_['app']['initialState']['roomStore']['roomInfo']['room']['owner']['nickname']
+        except:
+            name = self.rid
         douyin_list = []
         try:
             flv_pull_url = json_['app']['initialState']['roomStore']['roomInfo']['room']['stream_url']['flv_pull_url']
@@ -74,6 +79,7 @@ class DouYin:
                 if return_dict:
                     real_list.append(return_dict)
             if real_list:
+                real_list.append({'name': name})
                 real_list.append({'rid': self.rid})
                 real_dict['douyin'] = real_list
             if real_dict:

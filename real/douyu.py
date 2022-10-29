@@ -110,7 +110,10 @@ class DouYu:
     def get_real_url(self):
         self.res = self.s.get('https://m.douyu.com/' + str(self.rid)).text
         result = re.search(r'rid":(\d{1,8}),"vipId', self.res)
-
+        try:
+            name = re.findall('"nickname":"(.*?)"', self.res)[0]
+        except:
+            name = self.rid
         if result:
             self.rid = result.group(1)
         else:
@@ -163,6 +166,7 @@ class DouYu:
                 if return_dict:
                     real_list.append(return_dict)
             if real_list:
+                real_list.append({'name': name})
                 real_list.append({'rid': self.rid})
                 real_dict['douyu'] = real_list
                 return real_dict

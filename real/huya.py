@@ -44,6 +44,7 @@ class HuYa:
         real_list = []
         thread_list = []
         real_dict = {}
+        name = ''
         try:
             room_url = 'https://m.huya.com/{}'.format(self.rid)
             header = {
@@ -52,6 +53,11 @@ class HuYa:
                               'Chrome/75.0.3770.100 Mobile Safari/537.36 '
             }
             response = requests.get(url=room_url, headers=header, timeout=2).text
+
+            try:
+                name = re.findall('"sNick":"(.*?)","iSex"', response)[0]
+            except:
+                name = self.rid
             liveLineUrl = re.findall(r'"liveLineUrl":"([\s\S]*?)",', response)[0]
             liveline = base64.b64decode(liveLineUrl).decode('utf-8')
 
@@ -62,9 +68,9 @@ class HuYa:
                     liveline = self.live(liveline)
                     real_url = ("https:" + liveline).replace("hls", "flv").replace("m3u8", "flv").replace(
                         '&ctype=tars_mobile', '')
-                    rate = re.findall('264_(\d+)', real_url)
-                    if not rate:
-                        rate = [500, 4000, 8000, 10000]
+                    # rate = re.findall('264_(\d+)', real_url)
+                    # if not rate:
+                    rate = [500, 2000, 4000, 8000, 10000]
 
                     for ratio in range(len(rate) - 1, -1, -1):
                         ratio = rate[ratio]
@@ -85,6 +91,7 @@ class HuYa:
                 if return_dict:
                     real_list.append(return_dict)
             if real_list:
+                real_list.append({'name': name})
                 real_list.append({'rid': self.rid})
                 real_dict['huya'] = real_list
             if real_dict:

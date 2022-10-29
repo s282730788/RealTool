@@ -23,6 +23,10 @@ class KuWo:
     def get_real_url(self):
         res = self.s.get(f'https://jx.kuwo.cn/{self.rid}').text
         roomid = re.search(r"roomId: '(\d*)'", res)
+        try:
+            name = re.findall("starName: '(.*?)'", res)[0]
+        except:
+            name = self.rid
         if roomid:
             self.rid = roomid.group(1)
         else:
@@ -61,6 +65,7 @@ class KuWo:
                 if return_dict:
                     real_list.append(return_dict)
             if real_list:
+                real_list.append({'name': name})
                 real_list.append({'rid': self.rid})
                 real_dict['kuwo'] = real_list
                 return real_dict

@@ -6,6 +6,7 @@
 
 import requests
 
+
 def requests_get_code(real_dict):
     for real_ in real_dict:
         try:
