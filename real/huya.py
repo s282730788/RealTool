@@ -68,16 +68,13 @@ class HuYa:
                     liveline = self.live(liveline)
                     real_url = ("https:" + liveline).replace("hls", "flv").replace("m3u8", "flv").replace(
                         '&ctype=tars_mobile', '')
-                    # rate = re.findall('264_(\d+)', real_url)
-                    # if not rate:
                     rate = [500, 2000, 4000, 8000, 10000]
-
                     for ratio in range(len(rate) - 1, -1, -1):
                         ratio = rate[ratio]
 
                         if ratio != 10000:
-                            real_url_ = real_url.replace('.flv?', f'.flv?ratio={ratio}&')
-                            real_lists.append({f'flv_{ratio}': real_url_})
+                            real_url_flv = real_url.replace('.flv?', f'.flv?ratio={ratio}&')
+                            real_lists.append({f'flv_{ratio}': real_url_flv})
                         else:
                             real_lists.append({f'flv_{ratio}': real_url})
         except:

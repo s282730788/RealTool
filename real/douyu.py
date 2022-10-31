@@ -139,6 +139,8 @@ class DouYu:
             if rate['rate'] != 0:
                 flv = {"{}_flv".format(rate['name']): "http://ws-tct.douyucdn.cn/live/{}_{}.flv?uuid=".format(key, rate[
                     'rate'] * 1000)}
+                m3u8 = {"{}_m3u8".format(rate['name']): "http://ws-tct.douyucdn.cn/live/{}_{}.m3u8?uuid=".format(key, rate[
+                    'rate'] * 1000)}
                 x_p2p = {"{}_x_p2p".format(rate['name']): "http://ws-tct.douyucdn.cn/live/{}_{}.xs?uuid=".format(key,
                                                                                                                  rate[
                                                                                                                      'rate'] * 1000)}
@@ -147,14 +149,17 @@ class DouYu:
                                                                                                                   rate[
                                                                                                                       'rate'] * 1000)}
                 real_lists.append(flv)
+                real_lists.append(m3u8)
                 real_lists.append(x_p2p)
                 real_lists.append(aliyun)
             else:
                 flv = {"{}_flv".format(rate['name']): "http://ws-tct.douyucdn.cn/live/{}.flv?uuid=".format(key)}
+                m3u8 = {"{}_m3u8".format(rate['name']): "http://ws-tct.douyucdn.cn/live/{}.m3u8?uuid=".format(key)}
                 x_p2p = {"{}_x_p2p".format(rate['name']): "http://ws-tct.douyucdn.cn/live/{}.xs?uuid=".format(key)}
                 aliyun = {
                     "{}_aliyun".format(rate['name']): "http://dyscdnali1.douyucdn.cn/live/{}.flv?uuid=".format(key)}
                 real_lists.append(flv)
+                real_lists.append(m3u8)
                 real_lists.append(x_p2p)
                 real_lists.append(aliyun)
         if real_lists:
