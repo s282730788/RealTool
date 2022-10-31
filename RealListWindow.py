@@ -310,7 +310,7 @@ class RealList(RoundShadow, QWidget):
                                                         border-bottom-left-radius:5px;
                                                         border-bottom-right-radius:5px;
                                                         background-color:#ffffff;
-                                                        border-image:url("./image/lol_s12.png");
+                                                        border-image:url("./image/73114636_bg.png");
                                                         padding:0px 0px 5px 0px;                                                    
                                                         }
                                              """)
@@ -618,5 +618,3 @@ if __name__ == '__main__':
     favorites = RealList(real_dict_)
     favorites.show()
     sys.exit(app.exec_())
-
-    
