@@ -584,7 +584,7 @@ class MainUi(QWidget):
             elif 'huya.com' in rid:
                 rid = rid.split("/")[-1]
             elif 'yy.com' in rid:
-                rid = re.findall('/(\d+)/', rid)[0]
+                rid = re.findall('/(\d+)', rid)[0]
             elif 'kuwo.cn' in rid:
                 rid = re.findall('/(\d+)', rid)[0]
             elif 'kugou.com' in rid:
