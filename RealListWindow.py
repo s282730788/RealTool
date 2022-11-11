@@ -627,3 +627,5 @@ class RealList(RoundShadow, QWidget):
 
     def closes(self):  # 关闭窗口
         self.close()
+
+        
