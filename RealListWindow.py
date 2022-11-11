@@ -15,6 +15,7 @@ import subprocess
 import win32api
 import requests
 import time
+from configobj import ConfigObj
 
 
 class ThreadRec(QtCore.QThread):
@@ -189,8 +190,6 @@ class MoveTop(QWidget):
 
     def InitializeWindow(self):
         self.isPressed = False
-        # self.setFixedWidth(840)
-        # self.setFixedHeight(60)
         top = QLabel()
         layout_h = QHBoxLayout()
         layout_h.addWidget(top)
@@ -352,7 +351,8 @@ class RealList(RoundShadow, QWidget):
                                                     }
                                                     """ % b)
 
-    def add_layout_title_save_all(self, live_name, url_dict, border_color, rid, nick_name):  # 平台名称，链接字典，border颜色，rid， 用户名称
+    def add_layout_title_save_all(self, live_name, url_dict, border_color, rid,
+                                  nick_name):  # 平台名称，链接字典，border颜色，rid， 用户名称
 
         def save(url_link, url_name, count):
             save_path = "{}/real_save/{}".format(os.getcwd(), rid)
@@ -364,11 +364,11 @@ class RealList(RoundShadow, QWidget):
                 asx_str = """
                 <asx version = "3.0" >
                 <entry>
-                <title>{}_{}</title>
+                <title>{}_{}_{}</title>
                 <ref href = "{}"/>
                 </entry>
                 </asx>
-                """.format(live_name, url_name, url_link)
+                """.format(live_name, url_name, nick_name, url_link)
                 with open(asx_path, "w", encoding="UTF8") as f:
                     f.write(asx_str)
 
@@ -413,7 +413,8 @@ class RealList(RoundShadow, QWidget):
 
         return hbox_title
 
-    def add_layout_url(self, live_name, url_name, url_link, border_color, count, rid, nick_name):  # 平台名称，链接名称， 链接地址， border颜色，链接计数，用户名称
+    def add_layout_url(self, live_name, url_name, url_link, border_color, count, rid,
+                       nick_name):  # 平台名称，链接名称， 链接地址， border颜色，链接计数，用户名称
         label_name = QLabel()
         label_name.setText(url_name)
         label_name.setFixedSize(160, 32)
@@ -483,9 +484,9 @@ class RealList(RoundShadow, QWidget):
         button_play = QPushButton()
         button_play.setFixedSize(28, 28)
         button_play.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        button_play.setToolTip('打开')
+        button_play.setToolTip('播放')
         button_play.setStyleSheet(button_qss('play.png'))
-        button_play.clicked.connect(lambda: asx_("play", rid))
+        button_play.clicked.connect(lambda: player_())
 
         button_rec = QPushButton()
         button_rec.setFixedSize(28, 28)
@@ -493,6 +494,15 @@ class RealList(RoundShadow, QWidget):
         button_rec.setToolTip('录制')
         button_rec.setStyleSheet(button_qss('rec.png'))
         button_rec.clicked.connect(lambda: asx_("rec", rid))
+
+        def player_():
+            config = ConfigObj("config.ini", encoding='UTF8')
+            if config['player'] == 'pot':
+                asx_('play', rid)
+            elif config['player'] == 'mpv':
+                print('mpv:%s    link:%s' %(config['mpv'], url_link))
+                subprocess.Popen("cmd.exe /C %s %s" % (config['mpv'], url_link), shell=True, stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE, universal_newlines=True, bufsize=1, creationflags=0x08000000)
 
         def asx_(text, rid_):
             save_path = "{}/real_save/{}".format(os.getcwd(), rid_)
@@ -507,11 +517,11 @@ class RealList(RoundShadow, QWidget):
                     asx_str = """
                     <asx version = "3.0" >
                     <entry>
-                    <title>{}_{}</title>
+                    <title>{}_{}_{}</title>
                     <ref href = "{}"/>
                     </entry>
                     </asx>
-                    """.format(live_name, url_name, url_link)
+                    """.format(live_name, url_name, nick_name, url_link)
 
                     with open(asx_path, "w", encoding="UTF8") as f:
                         f.write(asx_str)
@@ -575,6 +585,8 @@ class RealList(RoundShadow, QWidget):
                     border_color = '#CB83F7'
                 elif 'kugou' in name:
                     border_color = '#01D07F'
+                elif 'yizhibo' in name:
+                    border_color = '#2B2C2E'
 
                 vbox_list = QVBoxLayout()
                 vbox_list.setSpacing(0)
@@ -589,7 +601,9 @@ class RealList(RoundShadow, QWidget):
                                                                                         border-bottom-right-radius:5px;
                                                                                         }""" % border_color)
 
-                hbox_title.addLayout(self.add_layout_title_save_all(name, self.real_dict[name], border_color, self.real_dict[name][-1]['rid'], self.real_dict[name][-2]['name']))
+                hbox_title.addLayout(self.add_layout_title_save_all(name, self.real_dict[name], border_color,
+                                                                    self.real_dict[name][-1]['rid'],
+                                                                    self.real_dict[name][-2]['name']))
                 vbox_url = QVBoxLayout(label_url_background)
                 for count, url_dict in enumerate(self.real_dict[name]):
                     real_height += 80
@@ -601,7 +615,9 @@ class RealList(RoundShadow, QWidget):
                     vbox_list.setSpacing(0)
                     for url_name in url_dict:
                         if url_name != 'rid' and url_name != 'name':
-                            vbox_url.addLayout(self.add_layout_url(name, url_name, url_dict[url_name], border_color, count, self.real_dict[name][-1]['rid'], self.real_dict[name][-2]['name']))
+                            vbox_url.addLayout(
+                                self.add_layout_url(name, url_name, url_dict[url_name], border_color, count,
+                                                    self.real_dict[name][-1]['rid'], self.real_dict[name][-2]['name']))
                     self.label_scroll.setMinimumHeight(real_height)
                     vbox_real.addLayout(vbox_list)
             vbox_real.addStretch()
@@ -611,10 +627,3 @@ class RealList(RoundShadow, QWidget):
 
     def closes(self):  # 关闭窗口
         self.close()
-
-if __name__ == '__main__':
-    real_dict_ = {'bili': [{'线路1_10000': 'https://d1--cn-gotcha208.bilivideo.com/live-bvc/452545/live_7734200_bs_7236416_bluray/index.m3u8?expires=1666425106&len=0&oi=1996077370&pt=web&qn=10000&trid=1007142a47f980ab4e63b64389b1d50f3388&sigparams=cdn,expires,len,oi,pt,qn,trid&cdn=cn-gotcha208&sign=151cd1c22bdb9feb668b5a522c8a355e&sk=389f0685dcc3bfe1d06dc4d3cd9591b0&p2p_type=1&src=57345&sl=10&free_type=0&pp=rtmp&machinezone=ylf&source=onetier&site=fa3e53c76006ad4caa7a06f5e3af080b&order=1'}, {'线路1_2500': 'https://d1--cn-gotcha208.bilivideo.com/live-bvc/452545/live_7734200_bs_7236416_2500/index.m3u8?expires=1666425106&len=0&oi=1996077370&pt=web&qn=2500&trid=1007142a47f980ab4e63b64389b1d50f3388&sigparams=cdn,expires,len,oi,pt,qn,trid&cdn=cn-gotcha208&sign=151cd1c22bdb9feb668b5a522c8a355e&sk=389f0685dcc3bfe1d06dc4d3cd9591b0&p2p_type=1&src=57345&sl=10&free_type=0&pp=rtmp&machinezone=ylf&source=onetier&site=fa3e53c76006ad4caa7a06f5e3af080b&order=1'}, {'线路2_10000': 'https://cn-hbyc-ct-02-17.bilivideo.com/live-bvc/452545/live_7734200_bs_7236416_bluray/index.m3u8?expires=1666425106&len=0&oi=1996077370&pt=web&qn=10000&trid=1007142a47f980ab4e63b64389b1d50f3388&sigparams=cdn,expires,len,oi,pt,qn,trid&cdn=cn-gotcha01&sign=2ba76096de8def5a6a12bb6b6d488254&sk=389f0685dcc3bfe1d06dc4d3cd9591b0&flvsk=d4297950af2aa254a0e8a2a7dd98bd82&p2p_type=1&src=57345&sl=10&free_type=0&sid=cn-hbyc-ct-02-17&chash=0&sche=ban&bvchls=1&score=18&pp=rtmp&machinezone=ylf&source=onetier&site=fa3e53c76006ad4caa7a06f5e3af080b&order=2'}, {'线路2_4000': 'https://cn-hbyc-ct-02-17.bilivideo.com/live-bvc/452545/live_7734200_bs_7236416_4000/index.m3u8?expires=1666425106&len=0&oi=1996077370&pt=web&qn=4000&trid=1007142a47f980ab4e63b64389b1d50f3388&sigparams=cdn,expires,len,oi,pt,qn,trid&cdn=cn-gotcha01&sign=2ba76096de8def5a6a12bb6b6d488254&sk=389f0685dcc3bfe1d06dc4d3cd9591b0&flvsk=d4297950af2aa254a0e8a2a7dd98bd82&p2p_type=1&src=57345&sl=10&free_type=0&sid=cn-hbyc-ct-02-17&chash=0&sche=ban&bvchls=1&score=18&pp=rtmp&machinezone=ylf&source=onetier&site=fa3e53c76006ad4caa7a06f5e3af080b&order=2'}, {'线路2_2500': 'https://cn-hbyc-ct-02-17.bilivideo.com/live-bvc/452545/live_7734200_bs_7236416_2500/index.m3u8?expires=1666425106&len=0&oi=1996077370&pt=web&qn=2500&trid=1007142a47f980ab4e63b64389b1d50f3388&sigparams=cdn,expires,len,oi,pt,qn,trid&cdn=cn-gotcha01&sign=2ba76096de8def5a6a12bb6b6d488254&sk=389f0685dcc3bfe1d06dc4d3cd9591b0&flvsk=d4297950af2aa254a0e8a2a7dd98bd82&p2p_type=1&src=57345&sl=10&free_type=0&sid=cn-hbyc-ct-02-17&chash=0&sche=ban&bvchls=1&score=18&pp=rtmp&machinezone=ylf&source=onetier&site=fa3e53c76006ad4caa7a06f5e3af080b&order=2'}, {'线路2_1500': 'https://cn-hbyc-ct-02-17.bilivideo.com/live-bvc/452545/live_7734200_bs_7236416_1500/index.m3u8?expires=1666425106&len=0&oi=1996077370&pt=web&qn=1500&trid=1007142a47f980ab4e63b64389b1d50f3388&sigparams=cdn,expires,len,oi,pt,qn,trid&cdn=cn-gotcha01&sign=2ba76096de8def5a6a12bb6b6d488254&sk=389f0685dcc3bfe1d06dc4d3cd9591b0&flvsk=d4297950af2aa254a0e8a2a7dd98bd82&p2p_type=1&src=57345&sl=10&free_type=0&sid=cn-hbyc-ct-02-17&chash=0&sche=ban&bvchls=1&score=18&pp=rtmp&machinezone=ylf&source=onetier&site=fa3e53c76006ad4caa7a06f5e3af080b&order=2'}, {'线路3_10000': 'https://d1--cn-gotcha204.bilivideo.com/live-bvc/452545/live_7734200_bs_7236416_bluray/index.m3u8?expires=1666425106&len=0&oi=1996077370&pt=web&qn=10000&trid=1007142a47f980ab4e63b64389b1d50f3388&sigparams=cdn,expires,len,oi,pt,qn,trid&cdn=cn-gotcha204&sign=564bb886cf9c01437bd03a1170932bbf&sk=389f0685dcc3bfe1d06dc4d3cd9591b0&p2p_type=1&src=57345&sl=10&free_type=0&pp=rtmp&machinezone=ylf&source=onetier&site=fa3e53c76006ad4caa7a06f5e3af080b&order=3'}, {'线路3_4000': 'https://d1--cn-gotcha204.bilivideo.com/live-bvc/452545/live_7734200_bs_7236416_4000/index.m3u8?expires=1666425106&len=0&oi=1996077370&pt=web&qn=4000&trid=1007142a47f980ab4e63b64389b1d50f3388&sigparams=cdn,expires,len,oi,pt,qn,trid&cdn=cn-gotcha204&sign=564bb886cf9c01437bd03a1170932bbf&sk=389f0685dcc3bfe1d06dc4d3cd9591b0&p2p_type=1&src=57345&sl=10&free_type=0&pp=rtmp&machinezone=ylf&source=onetier&site=fa3e53c76006ad4caa7a06f5e3af080b&order=3'}, {'线路3_2500': 'https://d1--cn-gotcha204.bilivideo.com/live-bvc/452545/live_7734200_bs_7236416_2500/index.m3u8?expires=1666425106&len=0&oi=1996077370&pt=web&qn=2500&trid=1007142a47f980ab4e63b64389b1d50f3388&sigparams=cdn,expires,len,oi,pt,qn,trid&cdn=cn-gotcha204&sign=564bb886cf9c01437bd03a1170932bbf&sk=389f0685dcc3bfe1d06dc4d3cd9591b0&p2p_type=1&src=57345&sl=10&free_type=0&pp=rtmp&machinezone=ylf&source=onetier&site=fa3e53c76006ad4caa7a06f5e3af080b&order=3'}, {'线路3_1500': 'https://d1--cn-gotcha204.bilivideo.com/live-bvc/452545/live_7734200_bs_7236416_1500/index.m3u8?expires=1666425106&len=0&oi=1996077370&pt=web&qn=1500&trid=1007142a47f980ab4e63b64389b1d50f3388&sigparams=cdn,expires,len,oi,pt,qn,trid&cdn=cn-gotcha204&sign=564bb886cf9c01437bd03a1170932bbf&sk=389f0685dcc3bfe1d06dc4d3cd9591b0&p2p_type=1&src=57345&sl=10&free_type=0&pp=rtmp&machinezone=ylf&source=onetier&site=fa3e53c76006ad4caa7a06f5e3af080b&order=3'}, {'rid': '6'}]}
-    app = QApplication(sys.argv)
-    favorites = RealList(real_dict_)
-    favorites.show()
-    sys.exit(app.exec_())
