@@ -32,6 +32,7 @@ from real.douyin import DouYin
 from real.yy import YY
 from real.kuwo import KuWo
 from real.kugou import KuGou
+from real.yizhibo import YiZhiBo
 from RealListWindow import RealList
 from RealRid import RidList
 
@@ -78,6 +79,11 @@ class ThreadGet(QThread):
                     if real_name_dict == "kugou" and self.config['real'][real_name_dict] == "1":
                         real_class = KuGou(rid)
                         thread_list.append(pool.apply_async(real_class.get_real_url))
+
+                    if real_name_dict == "yizhibo" and self.config['real'][real_name_dict] == "1":
+                        real_class = YiZhiBo(rid)
+                        thread_list.append(pool.apply_async(real_class.get_real_url))
+
                 except Exception as err:
                     print("err:%s" % err)
         for thread in thread_list:
@@ -436,6 +442,7 @@ class MainUi(QWidget):
         self.real_yy = QtWidgets.QAction("歪歪直播", self.menu_real)
         self.real_kuwo = QtWidgets.QAction("酷我直播", self.menu_real)
         self.real_kugou = QtWidgets.QAction("酷狗直播", self.menu_real)
+        self.real_yizhibo = QtWidgets.QAction("一直播", self.menu_real)
         self.menu_real.addAction(self.real_douyu)
         self.menu_real.addAction(self.real_huya)
         self.menu_real.addAction(self.real_bili)
@@ -443,6 +450,7 @@ class MainUi(QWidget):
         self.menu_real.addAction(self.real_yy)
         self.menu_real.addAction(self.real_kuwo)
         self.menu_real.addAction(self.real_kugou)
+        self.menu_real.addAction(self.real_yizhibo)
         self.real_douyu.setCheckable(True)
         self.real_huya.setCheckable(True)
         self.real_bili.setCheckable(True)
@@ -450,6 +458,7 @@ class MainUi(QWidget):
         self.real_yy.setCheckable(True)
         self.real_kuwo.setCheckable(True)
         self.real_kugou.setCheckable(True)
+        self.real_yizhibo.setCheckable(True)
 
         self.menu_about = QtWidgets.QMenu("关于软件", self.menu_tool)
         self.about_down = QtWidgets.QAction("下载地址", self.menu_about)
@@ -463,6 +472,17 @@ class MainUi(QWidget):
         self.about_explain.triggered.connect(self.explain_)
 
         self.menu_setting = QtWidgets.QMenu("其它设置", self.menu_tool)
+        self.menu_play = QtWidgets.QMenu("播放设置", self.menu_setting)
+        self.menu_play.mouseReleaseEvent = self.mouse_play_event_real_
+        self.play_pot = QtWidgets.QAction("PotPlayer", self.menu_play)
+        self.play_mpv = QtWidgets.QAction("MpvPlayer", self.menu_play)
+        self.play_pot.setCheckable(True)
+        self.play_mpv.setCheckable(True)
+
+        self.menu_play.addAction(self.play_pot)
+        self.menu_play.addAction(self.play_mpv)
+
+        self.menu_setting.addMenu(self.menu_play)
         self.setting_rid = QtWidgets.QAction("批量获取", self.menu_setting)
         self.setting_background = QtWidgets.QAction("背景设置", self.menu_setting)
         self.setting_font_size = QtWidgets.QAction("字体大小", self.menu_setting)
@@ -498,7 +518,63 @@ class MainUi(QWidget):
         self.real_yy.triggered.connect(self.real_live_)
         self.real_kuwo.triggered.connect(self.real_live_)
         self.real_kugou.triggered.connect(self.real_live_)
+        self.real_yizhibo.triggered.connect(self.real_live_)
         self.pushbutton_logo.clicked.connect(lambda: self.real_window())
+        self.play_pot.triggered.connect(lambda: self.player_('pot'))
+        self.play_mpv.triggered.connect(lambda: self.player_('mpv'))
+
+    def initial_live(self):
+        self.config = ConfigObj("config.ini", encoding="UTF8")
+        for real_ in self.config['real']:
+            if real_ == 'douyu':
+                if self.config['real'][real_] == "1":
+                    self.real_douyu.setChecked(True)
+            if real_ == 'huya':
+                if self.config['real'][real_] == "1":
+                    self.real_huya.setChecked(True)
+            if real_ == 'bili':
+                if self.config['real'][real_] == "1":
+                    self.real_bili.setChecked(True)
+            if real_ == 'douyin':
+                if self.config['real'][real_] == "1":
+                    self.real_douyin.setChecked(True)
+            if real_ == 'yy':
+                if self.config['real'][real_] == "1":
+                    self.real_yy.setChecked(True)
+            if real_ == 'kuwo':
+                if self.config['real'][real_] == "1":
+                    self.real_kuwo.setChecked(True)
+            if real_ == 'kugou':
+                if self.config['real'][real_] == "1":
+                    self.real_kugou.setChecked(True)
+            if real_ == 'yizhibo':
+                if self.config['real'][real_] == "1":
+                    self.real_yizhibo.setChecked(True)
+        if self.config['player'] == 'pot':
+            self.play_pot.setChecked(True)
+        elif self.config['player'] == 'mpv':
+            self.play_mpv.setChecked(True)
+
+    def player_(self, name):
+        self.play_pot.setChecked(False)
+        self.play_mpv.setChecked(False)
+        self.config = ConfigObj("config.ini", encoding="UTF8")
+        if name == 'pot':
+            self.play_pot.setChecked(True)
+            self.config['player'] = 'pot'
+        elif name == 'mpv':
+            file_, filetype = QFileDialog.getOpenFileName(self,
+                                                          "选取文件",
+                                                          os.getcwd(),
+                                                          "All Files(mpv*.exe)")
+            if file_:
+                self.config['mpv'] = file_
+                self.play_mpv.setChecked(True)
+                self.config['player'] = 'mpv'
+            else:
+                self.play_pot.setChecked(True)
+                self.config['player'] = 'pot'
+        self.config.write()
 
     def real_rid_(self):
         self.real_rid_list = RidList()
@@ -595,7 +671,9 @@ class MainUi(QWidget):
                         rid = ""
                 else:
                     rid = re.findall('/(\d+)', rid)[0]
-
+            elif 'yizhibo' in rid:
+                rid = re.findall('yizhibo.com.*/(.*?).html', rid)[0]
+                print(rid)
             rid_list.append(rid)
             self.lineedit_input.setText(rid)
             self.thread = ThreadGet(rid_list)
@@ -655,32 +733,10 @@ class MainUi(QWidget):
             self.config['real']['kuwo'] = "1"
         if self.real_kugou.isChecked():
             self.config['real']['kugou'] = "1"
-        self.config.write()
+        if self.real_yizhibo.isChecked():
+            self.config['real']['yizhibo'] = "1"
 
-    def initial_live(self):
-        self.config = ConfigObj("config.ini", encoding="UTF8")
-        for real_ in self.config['real']:
-            if real_ == 'douyu':
-                if self.config['real'][real_] == "1":
-                    self.real_douyu.setChecked(True)
-            if real_ == 'huya':
-                if self.config['real'][real_] == "1":
-                    self.real_huya.setChecked(True)
-            if real_ == 'bili':
-                if self.config['real'][real_] == "1":
-                    self.real_bili.setChecked(True)
-            if real_ == 'douyin':
-                if self.config['real'][real_] == "1":
-                    self.real_douyin.setChecked(True)
-            if real_ == 'yy':
-                if self.config['real'][real_] == "1":
-                    self.real_yy.setChecked(True)
-            if real_ == 'kuwo':
-                if self.config['real'][real_] == "1":
-                    self.real_kuwo.setChecked(True)
-            if real_ == 'kugou':
-                if self.config['real'][real_] == "1":
-                    self.real_kugou.setChecked(True)
+        self.config.write()
 
     def background_image_(self):
         getcwd_file = '{}/image/'.format(os.getcwd())
@@ -800,11 +856,13 @@ class MainUi(QWidget):
         # 打开直播源目录
         if not os.path.exists(os.getcwd() + "/real_save"):  # 判断文件夹是否创建
             os.makedirs(os.getcwd() + "/real_save")
-        subprocess.Popen("cmd.exe /C" + "start %s" % (os.getcwd() + "/real_save"), shell=True)  # 此方法不显示黑窗口
+        subprocess.Popen("cmd.exe /C" + "start %s" % (os.getcwd() + "/real_save"), shell=True, stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE, universal_newlines=True, bufsize=1, creationflags=0x08000000)
 
     def open_dir_(self):
         # 打开软件目录
-        subprocess.Popen("cmd.exe /C" + "start %s" % (os.getcwd()), shell=True)
+        subprocess.Popen("cmd.exe /C" + "start %s" % (os.getcwd()), shell=True, stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE, universal_newlines=True, bufsize=1, creationflags=0x08000000)
 
     def mouse_release_event_real_(self, event):
         action = self.menu_real.actionAt(event.pos())
@@ -814,6 +872,14 @@ class MainUi(QWidget):
         if action.property('canHide'):  # 如果有该属性则给菜单自己处理
             return QtWidgets.QMenu.mouseReleaseEvent(self.menu_real, event)
         # 找到了QAction则只触发Action
+        action.activate(action.Trigger)
+
+    def mouse_play_event_real_(self, event):
+        action = self.menu_play.actionAt(event.pos())
+        if not action:
+            return QtWidgets.QMenu.mouseReleaseEvent(self.menu_play, event)
+        if action.property('canHide'):
+            return QtWidgets.QMenu.mouseReleaseEvent(self.menu_play, event)
         action.activate(action.Trigger)
 
     def mouse_release_event_quality_(self, event):
@@ -875,7 +941,10 @@ class MainUi(QWidget):
         self.showMinimized()
 
     def close_(self):  # 关闭窗口动画
-        subprocess.Popen("cmd.exe /C" + "taskkill -f -im N_m3u8DL-RE.exe", shell=True)
+        # subprocess.Popen("cmd.exe /C" + "taskkill -f -im N_m3u8DL-RE.exe", shell=True)
+        subprocess.Popen("cmd.exe /C" + "taskkill -f -im N_m3u8DL-RE.exe", shell=True, stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE, universal_newlines=True, bufsize=1, creationflags=0x08000000)
+
         self.mSysTrayIcon = None  # 软件关闭后托盘不会有残留
         self.close_animation = QPropertyAnimation(self, b"windowOpacity")
         self.close_animation.setDuration(400)  # 动画时长
