@@ -3,7 +3,7 @@
 # @Author: 须尽欢
 # @File:RealListWindow.py
 # Software:PyCharm
-
+import re
 import sys
 from PyQt5.QtWidgets import QWidget, QPushButton, QLabel, QHBoxLayout, QVBoxLayout, QLineEdit, QScrollArea, QApplication
 from PyQt5.QtCore import Qt, QRect
@@ -500,8 +500,9 @@ class RealList(RoundShadow, QWidget):
             if config['player'] == 'pot':
                 asx_('play', rid)
             elif config['player'] == 'mpv':
-                mpv_path = '\"%s\"' % config['mpv']
-                subprocess.Popen("cmd.exe /C %s %s" % (mpv_path, url_link), shell=True)
+                url_link_ = '\"%s\"' % url_link
+                mpv_path = config['mpv']
+                subprocess.Popen('cmd.exe /C %s %s' % (mpv_path, url_link_), shell=True)
 
         def asx_(text, rid_):
             save_path = "{}/real_save/{}".format(os.getcwd(), rid_)
