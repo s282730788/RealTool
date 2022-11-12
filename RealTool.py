@@ -856,13 +856,11 @@ class MainUi(QWidget):
         # 打开直播源目录
         if not os.path.exists(os.getcwd() + "/real_save"):  # 判断文件夹是否创建
             os.makedirs(os.getcwd() + "/real_save")
-        subprocess.Popen("cmd.exe /C" + "start %s" % (os.getcwd() + "/real_save"), shell=True, stdout=subprocess.PIPE,
-                         stderr=subprocess.PIPE, universal_newlines=True, bufsize=1, creationflags=0x08000000)
+        os.startfile(os.getcwd() + "/real_save")
 
     def open_dir_(self):
         # 打开软件目录
-        subprocess.Popen("cmd.exe /C" + "start %s" % (os.getcwd()), shell=True, stdout=subprocess.PIPE,
-                         stderr=subprocess.PIPE, universal_newlines=True, bufsize=1, creationflags=0x08000000)
+        os.startfile(os.getcwd())
 
     def mouse_release_event_real_(self, event):
         action = self.menu_real.actionAt(event.pos())
@@ -941,7 +939,6 @@ class MainUi(QWidget):
         self.showMinimized()
 
     def close_(self):  # 关闭窗口动画
-        # subprocess.Popen("cmd.exe /C" + "taskkill -f -im N_m3u8DL-RE.exe", shell=True)
         subprocess.Popen("cmd.exe /C" + "taskkill -f -im N_m3u8DL-RE.exe", shell=True, stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE, universal_newlines=True, bufsize=1, creationflags=0x08000000)
 
