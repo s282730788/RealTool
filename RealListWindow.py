@@ -500,9 +500,8 @@ class RealList(RoundShadow, QWidget):
             if config['player'] == 'pot':
                 asx_('play', rid)
             elif config['player'] == 'mpv':
-                print('mpv:%s    link:%s' %(config['mpv'], url_link))
-                subprocess.Popen("cmd.exe /C %s %s" % (config['mpv'], url_link), shell=True, stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE, universal_newlines=True, bufsize=1, creationflags=0x08000000)
+                mpv_path = '\"%s\"' % config['mpv']
+                subprocess.Popen("cmd.exe /C %s %s" % (mpv_path, url_link), shell=True)
 
         def asx_(text, rid_):
             save_path = "{}/real_save/{}".format(os.getcwd(), rid_)
@@ -531,7 +530,7 @@ class RealList(RoundShadow, QWidget):
                 self.label_text("保存成功")
             elif text == "play":
                 save()
-                subprocess.Popen("cmd.exe /C start {}".format(asx_path), shell=True)  # 此方法不显示黑窗口
+                os.startfile(asx_path)
                 self.label_text("打开文件")
             elif text == 'rec':
                 self.thread_rec = ThreadRec(live_name, url_link.strip(), rid_, url_name)
@@ -628,4 +627,25 @@ class RealList(RoundShadow, QWidget):
     def closes(self):  # 关闭窗口
         self.close()
 
-        
+
+if __name__ == '__main__':
+    real_dict_ = {'douyu': [{'原画_flv': 'http://ws-tct.douyucdn.cn/live/6rdygfhd.flv?uuid='},
+                            {'原画_m3u8': 'http://ws-tct.douyucdn.cn/live/6rdygfhd.m3u8?uuid='},
+                            {'原画_x_p2p': 'http://ws-tct.douyucdn.cn/live/6rdygfhd.xs?uuid='},
+                            {'高清_flv': 'http://ws-tct.douyucdn.cn/live/6rdygfhd_2000.flv?uuid='},
+                            {'高清_m3u8': 'http://ws-tct.douyucdn.cn/live/6rdygfhd_2000.m3u8?uuid='},
+                            {'高清_x_p2p': 'http://ws-tct.douyucdn.cn/live/6rdygfhd_2000.xs?uuid='}, {'name': '斗鱼官方直播'},
+                            {'rid': '6'}], 'bili': [{
+        '线路1_10000': 'https://d1--cn-gotcha208.bilivideo.com/live-bvc/779788/live_50329118_9516950_bluray/index.m3u8?expires=1668276677&len=0&oi=1996077206&pt=web&qn=10000&trid=1007920b1c6ee6d349bea1cfd76324335aac&sigparams=cdn,expires,len,oi,pt,qn,trid&cdn=cn-gotcha208&sign=606162f239f4bb86e617278699a75412&sk=c9c6154426932efa80d25af02e87a3bd&p2p_type=1&src=57345&sl=10&free_type=0&pp=rtmp&machinezone=ylf&source=onetier&site=41084a238fdf53253ad6d6924866b8ea&order=1'},
+        {
+            '线路2_10000': 'https://cn-hbyc-ct-02-28.bilivideo.com/live-bvc/779788/live_50329118_9516950_bluray/index.m3u8?expires=1668276677&len=0&oi=1996077206&pt=web&qn=10000&trid=1007920b1c6ee6d349bea1cfd76324335aac&sigparams=cdn,expires,len,oi,pt,qn,trid&cdn=cn-gotcha01&sign=c2792b36c2e5151db1bde3b257d5e1a3&sk=c9c6154426932efa80d25af02e87a3bd&flvsk=2935686d6cb9146c7a6a6a0b4e120e2557adc0b48de99725a5887e843ee476a1&p2p_type=1&src=57345&sl=10&free_type=0&sid=cn-hbyc-ct-02-28&chash=0&sche=ban&bvchls=1&score=18&pp=rtmp&machinezone=ylf&source=onetier&site=41084a238fdf53253ad6d6924866b8ea&order=2'},
+        {
+            '线路2_2500': 'https://cn-hbyc-ct-02-28.bilivideo.com/live-bvc/779788/live_50329118_9516950_2500/index.m3u8?expires=1668276677&len=0&oi=1996077206&pt=web&qn=2500&trid=1007920b1c6ee6d349bea1cfd76324335aac&sigparams=cdn,expires,len,oi,pt,qn,trid&cdn=cn-gotcha01&sign=c2792b36c2e5151db1bde3b257d5e1a3&sk=c9c6154426932efa80d25af02e87a3bd&flvsk=2935686d6cb9146c7a6a6a0b4e120e2557adc0b48de99725a5887e843ee476a1&p2p_type=1&src=57345&sl=10&free_type=0&sid=cn-hbyc-ct-02-28&chash=0&sche=ban&bvchls=1&score=18&pp=rtmp&machinezone=ylf&source=onetier&site=41084a238fdf53253ad6d6924866b8ea&order=2'},
+        {
+            '线路2_1500': 'https://cn-hbyc-ct-02-28.bilivideo.com/live-bvc/779788/live_50329118_9516950_1500/index.m3u8?expires=1668276677&len=0&oi=1996077206&pt=web&qn=1500&trid=1007920b1c6ee6d349bea1cfd76324335aac&sigparams=cdn,expires,len,oi,pt,qn,trid&cdn=cn-gotcha01&sign=c2792b36c2e5151db1bde3b257d5e1a3&sk=c9c6154426932efa80d25af02e87a3bd&flvsk=2935686d6cb9146c7a6a6a0b4e120e2557adc0b48de99725a5887e843ee476a1&p2p_type=1&src=57345&sl=10&free_type=0&sid=cn-hbyc-ct-02-28&chash=0&sche=ban&bvchls=1&score=18&pp=rtmp&machinezone=ylf&source=onetier&site=41084a238fdf53253ad6d6924866b8ea&order=2'},
+        {'name': '哔哩哔哩英雄联盟赛事'}, {'rid': '6'}]}
+
+    app = QApplication(sys.argv)
+    favorites = RealList(real_dict_)
+    favorites.show()
+    sys.exit(app.exec_())
