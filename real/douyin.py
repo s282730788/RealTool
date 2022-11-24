@@ -22,15 +22,9 @@ class DouYin:
 
         if 'v.douyin.com' in self.rid:
             self.rid = self.get_room_id(self.rid)
-        headers_ = {
-            "referer": "https://live.douyin.com/",
-            "upgrade-insecure-requests": "1",
-            "user-agent": "Mozilla/5.0(WindowsNT10.0;WOW64)AppleWebKit/537.36(KHTML,likeGecko)Chrome/86.0.4240.198Safari/537.36",
-        }
         url = 'https://live.douyin.com/{}'.format(self.rid)
-        response_cookies = requests.get(url, headers=headers_).cookies.values()[0]
         headers = {
-            "cookie": "__ac_nonce=%s;" % response_cookies,
+            "cookie": "__ac_nonce=0;",
             "referer": "https://live.douyin.com/",
             "upgrade-insecure-requests": "1",
             "user-agent": "Mozilla/5.0(WindowsNT10.0;WOW64)AppleWebKit/537.36(KHTML,likeGecko)Chrome/86.0.4240.198Safari/537.36",
@@ -111,3 +105,8 @@ class DouYin:
                                 params=params).json()
         if response:
             return response['data']['room']['owner']['web_rid']
+
+# if __name__ == '__main__':
+#     r = '231598084937'
+#     douyin = DouYin(r)
+#     print(douyin.get_real_url())
