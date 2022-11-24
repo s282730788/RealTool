@@ -84,23 +84,26 @@ class ThreadGet(QThread):
                         real_class = YiZhiBo(rid)
                         thread_list.append(pool.apply_async(real_class.get_real_url))
 
-                except Exception as err:
-                    print("err:%s" % err)
+                except Exception as e:
+                    print("e:%s" % e)
         for thread in thread_list:
-            return_dict = thread.get()
-            count = 0
-            if return_dict:
-                if real_dict:
-                    for i in range(len(real_dict)):
-                        while list(return_dict.keys())[0] == list(real_dict.keys())[i]:
-                            count += 1
-                            if f'{list(return_dict.keys())[0].split("_")[0]}_{count}' != list(real_dict.keys())[i]:
-                                return_dict.update(
-                                    {f'{list(return_dict.keys())[0].split("_")[0]}_{count}': return_dict.pop(
-                                        list(return_dict.keys())[0])})
-                                break
+            try:
+                return_dict = thread.get()
+                count = 0
+                if return_dict:
+                    if real_dict:
+                        for i in range(len(real_dict)):
+                            while list(return_dict.keys())[0] == list(real_dict.keys())[i]:
+                                count += 1
+                                if f'{list(return_dict.keys())[0].split("_")[0]}_{count}' != list(real_dict.keys())[i]:
+                                    return_dict.update(
+                                        {f'{list(return_dict.keys())[0].split("_")[0]}_{count}': return_dict.pop(
+                                            list(return_dict.keys())[0])})
+                                    break
 
-                real_dict.update(return_dict)
+                    real_dict.update(return_dict)
+            except Exception as err:
+                print("err:%s" % err)
         if real_dict:
             print(real_dict)
             self._signal.emit(real_dict, 'true')
