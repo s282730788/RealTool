@@ -13,6 +13,7 @@ import requests
 import re
 import sys
 # sys.path.insert(0, '..')
+# from requests_code import requests_get_code
 from .requests_code import requests_get_code
 from multiprocessing.pool import ThreadPool
 
@@ -45,6 +46,7 @@ class BiliBili:
         if live_status != 1:
             return {}
         self.real_room_id = res['data']['room_id']
+        print(self.real_room_id)
         url = 'https://api.live.bilibili.com/xlive/web-room/v2/index/getRoomPlayInfo'
         param = {
             'room_id': self.real_room_id,
@@ -65,6 +67,7 @@ class BiliBili:
         real_dict = {}
 
         for data in stream_info:
+            print(data)
             format_name = data['format'][0]['format_name']
             if format_name == 'ts':
                 base_url = data['format'][-1]['codec'][0]['base_url']
@@ -79,11 +82,11 @@ class BiliBili:
                             url_ = re.sub('bluray/index', f'{qn}/index', base_url)
                         elif qn > 10000:
                             continue
-
                         extra = re.sub('qn=(\d+)', f'qn={qn}', extra)
                         real_lists.append({f'线路{i + 1}_{qn}': f'{host}{url_}{extra}'})
                 break
         if real_lists:
+            print(real_lists)
             pool = ThreadPool(processes=int(len(real_lists)))
             for real_ in real_lists:
                 thread_list.append(pool.apply_async(requests_get_code, args=(real_,)))
@@ -92,7 +95,12 @@ class BiliBili:
                 if return_dict:
                     real_list.append(return_dict)
             if real_list:
-                real_list.append({'name': self.name(uid)})
+                try:
+                    real_list.append({'name': self.name_(uid)})
+                except Exception as err:
+                    print("匹配用户名失败：".format(err))
+                    real_list.append({'name': uid})
+
                 real_list.append({'rid': self.rid})
 
                 real_dict['bili'] = real_list
@@ -100,8 +108,8 @@ class BiliBili:
                 return real_dict
         return {}
 
-    def name(self, uid):
-        url = 'https://api.bilibili.com/x/space/acc/info?mid={}&token=&platform=web&jsonp=jsonp'.format(uid)
+    def name_(self, uid):
+        url = 'https://api.bilibili.com/x/space/wbi/acc/info?mid={}&token=&platform=web'.format(uid)
         headers = {
             'origin': 'https://space.bilibili.com',
             'referer': 'https://space.bilibili.com/{}/'.format(uid),
@@ -113,7 +121,7 @@ class BiliBili:
             return name
         else:
             return uid
-# if __name__ == '__main__':
-#     rid = '6'
-#     bili = BiliBili(rid)
-#     print(bili.get_real_url())
+if __name__ == '__main__':
+    rid = '6'
+    bili = BiliBili(rid)
+    print(bili.get_real_url())

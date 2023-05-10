@@ -137,11 +137,11 @@ class DouYu:
                               {'name': '高清', 'rate': 2, 'high_bit': 0}]
         for rate in self.rate_list:
             if rate['rate'] != 0:
-                flv = {"{}_flv".format(rate['name']): "http://ws-tct.douyucdn.cn/live/{}_{}.flv?uuid=".format(key, rate[
+                flv = {"{}_flv".format(rate['name']): "http://hdltctwk.douyucdn2.cn/live/{}_{}.flv?uuid=".format(key, rate[
                     'rate'] * 1000)}
-                m3u8 = {"{}_m3u8".format(rate['name']): "http://ws-tct.douyucdn.cn/live/{}_{}.m3u8?uuid=".format(key, rate[
+                m3u8 = {"{}_m3u8".format(rate['name']): "http://hdltctwk.douyucdn2.cn/live/{}_{}.m3u8?uuid=".format(key, rate[
                     'rate'] * 1000)}
-                x_p2p = {"{}_x_p2p".format(rate['name']): "http://ws-tct.douyucdn.cn/live/{}_{}.xs?uuid=".format(key,
+                x_p2p = {"{}_x_p2p".format(rate['name']): "http://hdltctwk.douyucdn2.cn/live/{}_{}.xs?uuid=".format(key,
                                                                                                                  rate[
                                                                                                                      'rate'] * 1000)}
                 aliyun = {
@@ -153,9 +153,9 @@ class DouYu:
                 real_lists.append(x_p2p)
                 real_lists.append(aliyun)
             else:
-                flv = {"{}_flv".format(rate['name']): "http://ws-tct.douyucdn.cn/live/{}.flv?uuid=".format(key)}
-                m3u8 = {"{}_m3u8".format(rate['name']): "http://ws-tct.douyucdn.cn/live/{}.m3u8?uuid=".format(key)}
-                x_p2p = {"{}_x_p2p".format(rate['name']): "http://ws-tct.douyucdn.cn/live/{}.xs?uuid=".format(key)}
+                flv = {"{}_flv".format(rate['name']): "http://hdltctwk.douyucdn2.cn/live/{}.flv?uuid=".format(key)}
+                m3u8 = {"{}_m3u8".format(rate['name']): "http://hdltctwk.douyucdn2.cn/live/{}.m3u8?uuid=".format(key)}
+                x_p2p = {"{}_x_p2p".format(rate['name']): "http://hdltctwk.douyucdn2.cn/live/{}.xs?uuid=".format(key)}
                 aliyun = {
                     "{}_aliyun".format(rate['name']): "http://dyscdnali1.douyucdn.cn/live/{}.flv?uuid=".format(key)}
                 real_lists.append(flv)

@@ -35,7 +35,10 @@ from real.kugou import KuGou
 from real.yizhibo import YiZhiBo
 from RealListWindow import RealList
 from RealRid import RidList
-
+import urllib3
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+urllib3.disable_warnings()
 
 class ThreadGet(QThread):
     _signal = pyqtSignal(dict, str)
@@ -83,7 +86,6 @@ class ThreadGet(QThread):
                     if real_name_dict == "yizhibo" and self.config['real'][real_name_dict] == "1":
                         real_class = YiZhiBo(rid)
                         thread_list.append(pool.apply_async(real_class.get_real_url))
-
                 except Exception as e:
                     print("e:%s" % e)
         for thread in thread_list:
@@ -446,6 +448,7 @@ class MainUi(QWidget):
         self.real_kuwo = QtWidgets.QAction("酷我直播", self.menu_real)
         self.real_kugou = QtWidgets.QAction("酷狗直播", self.menu_real)
         self.real_yizhibo = QtWidgets.QAction("一直播", self.menu_real)
+
         self.menu_real.addAction(self.real_douyu)
         self.menu_real.addAction(self.real_huya)
         self.menu_real.addAction(self.real_bili)
@@ -596,7 +599,7 @@ class MainUi(QWidget):
                                 QMessageBox.Ok)
 
     def url_down_(self):
-        url = 'https://lanzou.com/b00w74arg'
+        url = 'https://wwjd.lanzout.com/b00w74arg'
         QtGui.QDesktopServices.openUrl(QtCore.QUrl(url))
         self.lineedit_input.setText("密码1234")
 
@@ -606,31 +609,56 @@ class MainUi(QWidget):
             self.real_list.show()
 
     def douyin_get_room_id(self, url):
-        headers = {
-            'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 10_3_1 like Mac OS X) AppleWebKit/603.1.30 (KHTML, like Gecko) Version/10.0 Mobile/14E304 Safari/602.1',
-        }
-        url = re.search(r'(https.*)', url).group(1)
-        response = requests.head(url, headers=headers, timeout=2)
-        url = response.headers['location']
-        room_id = re.search(r'\d{19}', url).group(0)
-
-        headers.update({
-            'cookie': '_tea_utm_cache_1128={%22utm_source%22:%22copy%22%2C%22utm_medium%22:%22android%22%2C%22utm_campaign%22:%22client_share%22}',
-            'host': 'webcast.amemv.com',
-        })
-        params = (
-            ('type_id', '0'),
-            ('live_id', '1'),
-            ('room_id', room_id),
-            ('app_id', '1128'),
-            ('X-Bogus', '1'),
-
-        )
-
-        response = requests.get('https://webcast.amemv.com/webcast/room/reflow/info/?', headers=headers,
-                                params=params, timeout=2).json()
-        if response:
-            return response['data']['room']['owner']['web_rid']
+        try:
+            print(url)
+            chrome_options = Options()
+            chrome_options.add_argument('--headless')  # 无头模式
+            driver = webdriver.Chrome(options=chrome_options)
+            driver.implicitly_wait(10)
+            driver.get(url)
+            err = 0
+            while True:
+                if 'live.douyin' in driver.current_url:
+                    room_id = re.findall("\d+",driver.current_url)[0]
+                    print(room_id)
+                    return room_id
+                time.sleep(1)
+                err += 1
+                if err >= 10:
+                    break
+        except Exception as err:
+            print(err)
+        # headers = {
+        #     'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 10_3_1 like Mac OS X) AppleWebKit/603.1.30 (KHTML, like Gecko) Version/10.0 Mobile/14E304 Safari/602.1',
+        # }
+        # url = re.search(r'(https.*)', url).group(1)
+        # print(f"111:{url}")
+        #
+        # response = requests.head(url, headers=headers, timeout=2, verify=False)
+        # print(response.status_code)
+        #
+        # url = response.headers['location']
+        # print(f"222:{url}")
+        # room_id = re.search(r'\d{19}', url).group(0)
+        # print(f"333:{room_id}")
+        # headers.update({
+        #     'cookie': '_tea_utm_cache_1128={%22utm_source%22:%22copy%22%2C%22utm_medium%22:%22android%22%2C%22utm_campaign%22:%22client_share%22}',
+        #     'host': 'webcast.amemv.com',
+        # })
+        # params = (
+        #     ('type_id', '0'),
+        #     ('live_id', '1'),
+        #     ('room_id', room_id),
+        #     ('app_id', '1128'),
+        #     ('X-Bogus', '1'),
+        # )
+        #
+        # response = requests.get('https://webcast.amemv.com/webcast/room/reflow/info/?', headers=headers,
+        #                         params=params, timeout=2)
+        # print(response.text)
+        # print(f"444:{response.json()}")
+        # if response.json():
+        #     return response.json()['data']['room']['owner']['web_rid']
 
     def kugou_get_room_id(self, url):
         headers = {
@@ -647,11 +675,15 @@ class MainUi(QWidget):
         rid_list_del = []  # 去重
         if rid:
             if 'live.douyin.com' in rid:
-                rid = re.findall('(\d+)', rid)[0]
+                try:
+                    rid = re.findall('(\d+)', rid)[0]
+                except:
+                    pass
             elif 'v.douyin.com' in rid:
                 try:
                     rid = self.douyin_get_room_id(rid)
-                except:
+                except Exception as err:
+                    print(f"douyin_err:{err}")
                     rid = ""
             elif 'live.bilibili.com' in rid:
                 rid = re.search('\d+', rid).group()

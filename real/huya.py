@@ -66,17 +66,17 @@ class HuYa:
                     real_lists.append({'直播录像': f'https://{liveline}'})
                 else:
                     liveline = self.live(liveline)
-                    real_url = ("https:" + liveline).replace("hls", "flv").replace("m3u8", "flv").replace(
+                    real_url_flv = ("https:" + liveline).replace("hls", "flv").replace("m3u8", "flv").replace(
                         '&ctype=tars_mobile', '')
+                    print(real_url_flv)
                     rate = [500, 2000, 4000, 8000, 10000]
                     for ratio in range(len(rate) - 1, -1, -1):
                         ratio = rate[ratio]
-
                         if ratio != 10000:
-                            real_url_flv = real_url.replace('.flv?', f'.flv?ratio={ratio}&')
+                            real_url_flv = real_url_flv.replace('.flv?', f'.flv?ratio={ratio}&')
                             real_lists.append({f'flv_{ratio}': real_url_flv})
                         else:
-                            real_lists.append({f'flv_{ratio}': real_url})
+                            real_lists.append({f'flv_{ratio}': real_url_flv})
         except:
             pass
         if real_lists:

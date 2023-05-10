@@ -19,6 +19,8 @@ def config_():
     config['font'] = {}
     config['font']['size'] = 26
     config['font']['color'] = '#505050'
-    config['real'] = {'douyu': '1', 'huya': '1', 'bili': '1', 'douyin': '1', 'yy': '1', 'kuwo': '1', 'kugou': '1'}
+    config['real'] = {'douyu': '1', 'huya': '1', 'bili': '1', 'douyin': '1', 'kuaishou':'1','yy': '1', 'kuwo': '1', 'kugou': '1', 'yizhibo': '1'}
     config['rid'] = ""
+    config['player'] = 'pot'
+    config['mpv'] = ""
     config.write()

@@ -11,7 +11,9 @@ import urllib.parse
 import sys
 # sys.path.insert(0, '..')
 from .requests_code import requests_get_code
+# from requests_code import requests_get_code
 from multiprocessing.pool import ThreadPool
+import requests_html
 
 
 class DouYin:
@@ -24,21 +26,26 @@ class DouYin:
             self.rid = self.get_room_id(self.rid)
         url = 'https://live.douyin.com/{}'.format(self.rid)
         headers = {
-            "cookie": "__ac_nonce=0;",
+            "cookie": "__ac_nonce=000000000000000000000; ",
+            # "cookie": "__ac_nonce=063e4d746007f686f2fcf; ",
             "referer": "https://live.douyin.com/",
             "upgrade-insecure-requests": "1",
             "user-agent": "Mozilla/5.0(WindowsNT10.0;WOW64)AppleWebKit/537.36(KHTML,likeGecko)Chrome/86.0.4240.198Safari/537.36",
         }
-        response = requests.get(url, headers=headers).text
+        s = requests.session()
+        response = s.get(url, headers=headers)
 
         text = urllib.parse.unquote(
-            re.findall('<script id="RENDER_DATA" type="application/json">(.*?)</script>', response)[0])
+            re.findall('<script id="RENDER_DATA" type="application/json">(.*?)</script>', response.text)[0])
+
         json_ = json.loads(text)
         try:
             name = json_['app']['initialState']['roomStore']['roomInfo']['room']['owner']['nickname']
         except:
             name = self.rid
         douyin_list = []
+        douyin_dict = {}
+
         try:
             flv_pull_url = json_['app']['initialState']['roomStore']['roomInfo']['room']['stream_url']['flv_pull_url']
             douyin_list.append(flv_pull_url)
@@ -48,6 +55,8 @@ class DouYin:
         try:
             hls_pull_url_map = json_['app']['initialState']['roomStore']['roomInfo']['room']['stream_url'][
                 'hls_pull_url_map']
+            lists_ = json_['app']['initialState']['roomStore']['roomInfo']['room']['stream_url']['live_core_sdk_data']['pull_data']['stream_data']
+            douyin_dict = json.loads(lists_)['data']
             douyin_list.append(hls_pull_url_map)
         except:
             pass
@@ -57,12 +66,19 @@ class DouYin:
         thread_list = []
         real_dict = {}
 
-        for real_ in douyin_list:
-            for name_ in real_:
-                if '.flv' in real_[name_]:
-                    real_lists.append({f'flv_{name_}': real_[name_]})
-                elif '.m3u8' in real_[name_]:
-                    real_lists.append({f'm3u8_{name_}': real_[name_]})
+        # for real_ in douyin_list:
+        #     for name_ in real_:
+        #         if '.flv' in real_[name_]:
+        #             real_lists.append({f'flv_{name_}': real_[name_]})
+        #         elif '.m3u8' in real_[name_]:
+        #             real_lists.append({f'm3u8_{name_}': real_[name_]})
+
+        for real_ in douyin_dict:
+            try:
+                real_lists.append({f'flv_{real_}': douyin_dict[real_]['main']['flv']})
+                real_lists.append({f'hls_{real_}': douyin_dict[real_]['main']['hls']})
+            except:
+                pass
 
         if real_lists:
             pool = ThreadPool(processes=int(len(real_lists)))
@@ -107,6 +123,6 @@ class DouYin:
             return response['data']['room']['owner']['web_rid']
 
 # if __name__ == '__main__':
-#     r = '231598084937'
+#     r = '927264600913'
 #     douyin = DouYin(r)
 #     print(douyin.get_real_url())

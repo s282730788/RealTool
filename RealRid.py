@@ -277,7 +277,7 @@ class RidList(RoundShadow, QWidget):
                 self.rid_dict = ast.literal_eval(self.config['rid'])
             else:
                 self.rid_dict = {}
-            for i in range(30):
+            for i in range(1000):
                 if i in self.rid_dict.keys():
                     self.vbox_rid.addWidget(
                         self.lineedit_add(i, str(self.rid_dict[i])))
